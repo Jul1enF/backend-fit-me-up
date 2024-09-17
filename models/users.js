@@ -9,6 +9,7 @@ const userSchema = mongoose.Schema({
     is_verified : Boolean,
     is_admin : {type : Boolean, default : false},
     token : String,
+    push_token : String,
     bookmarks : Object,
 })
 

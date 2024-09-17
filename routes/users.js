@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
 // Route pour poster des notifs
 
 router.post('/postNotif', async (req, res) => {
-  // try {
+  try {
 
     const { postMessage } = req.body
 
@@ -112,10 +112,10 @@ router.post('/postNotif', async (req, res) => {
     }
 
     res.json({ allReceipts, tickets})
-  // }
-  // catch (error) {
-  //   res.json({ error })
-  // }
+  }
+  catch (error) {
+    res.json({ error })
+  }
 });
 
 

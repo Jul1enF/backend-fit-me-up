@@ -111,7 +111,7 @@ router.post('/postNotif', async (req, res) => {
       }
     }
 
-    res.json({ allReceipts})
+    res.json({ allReceipts, tickets})
   }
   catch (error) {
     res.json({ error })

@@ -24,6 +24,7 @@ router.post('/', async (req, res) => {
 });
 
 
+
 // Route pour poster des notifs
 
 router.post('/postNotif', async (req, res) => {
@@ -45,12 +46,12 @@ router.post('/postNotif', async (req, res) => {
         console.log(`Push token ${user.push_token} is not a valid Expo push token`);
       }
       else {
-        messages.push({
-          to: user.push_token,
-          sound: 'default',
-          title: "Titre de la notif",
-          body: postMessage,
-        })
+      messages.push({
+        to: user.push_token,
+        sound: 'default',
+        title: "Titre de la notif",
+        body: postMessage,
+      })
       }
     }
 
@@ -75,12 +76,15 @@ router.post('/postNotif', async (req, res) => {
 
     let ticketsWithId = [];
 
+    let tokensToSuppress = []
+
     for (let ticket of tickets) {
       if (ticket.status === 'ok') {
         ticketsWithId.push(ticket.id);
       }
       else {
         console.log("Bad ticket : ", ticket)
+        tokensToSuppress.push(ticket.details.expoPushToken)
       }
     }
 
@@ -101,8 +105,11 @@ router.post('/postNotif', async (req, res) => {
           let { status, details } = receipts[informations]
           console.log("receipts informations :", receipts[informations])
 
-          if (status === 'error' || details && details.error) {
+          if (status === 'error') {
             console.log("ReceiptId error :", receipts[informations])
+            if (details && details.error && !tokensToSuppress.some(e => e === details.expoPushToken)) {
+              tokensToSuppress.push(details.expoPushToken)
+            }
           }
         }
 
@@ -111,10 +118,18 @@ router.post('/postNotif', async (req, res) => {
       }
     }
 
-    res.json({ allReceipts, tickets})
+    // Suppression des push tokens à problèmes
+    if (tokensToSuppress.length > 0) {
+      for (let pushToken of tokensToSuppress) {
+        await User.updateOne({push_token : pushToken}, {push_token : ""})
+      }
+    }
+
+    res.json({ tickets })
   }
   catch (error) {
     res.json({ error })
+    console.log(error)
   }
 });
 

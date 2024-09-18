@@ -1,53 +1,25 @@
 var express = require('express');
 var router = express.Router();
 const User = require('../models/users')
-
-const bcrypt = require('bcrypt')
-const uid2 = require('uid2')
-const jwt = require('jsonwebtoken')
-const secretToken = process.env.SECRET_TOKEN
-
 const { Expo } = require('expo-server-sdk')
 
 
-// Route signup pour s'inscrire
-
-router.post('/signup', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const { firstname, name, email, password } = req.body
 
-    const data = await User.findOne({ email })
-    if (data) {
-      res.json({
-        result: false,
-        error: 'Utilisateur déjà enregistré !'
-      })
-      return
-    }
-    else {
+    const { firstname, push_token } = req.body
 
-      const hash = bcrypt.hashSync(password, 10)
-      const token = uid2(32)
+    const newUser = new User({
+      firstname,
+      push_token,
+    })
 
-      const jwtToken = jwt.sign({
-        token,
-      }, secretToken)
+    await newUser.save()
 
-      const newUser = new User({
-        firstname,
-        name,
-        email,
-        password: hash,
-        inscription_date: new Date(),
-        token,
-      })
-      const data = await newUser.save()
-
-      res.json({ result: true, jwtToken, firstname })
-    }
+    res.json({ result: "local server" })
   }
-  catch (err) {
-    res.json({ err })
+  catch (error) {
+    res.json({ error })
   }
 });
 
@@ -73,12 +45,12 @@ router.post('/postNotif', async (req, res) => {
         console.log(`Push token ${user.push_token} is not a valid Expo push token`);
       }
       else {
-      messages.push({
-        to: user.push_token,
-        sound: 'default',
-        title: "Titre de la notif",
-        body: postMessage,
-      })
+        messages.push({
+          to: user.push_token,
+          sound: 'default',
+          title: "Titre de la notif",
+          body: postMessage,
+        })
       }
     }
 
@@ -103,15 +75,12 @@ router.post('/postNotif', async (req, res) => {
 
     let ticketsWithId = [];
 
-    let tokensToSuppress = []
-
     for (let ticket of tickets) {
       if (ticket.status === 'ok') {
         ticketsWithId.push(ticket.id);
       }
       else {
         console.log("Bad ticket : ", ticket)
-        tokensToSuppress.push(ticket.details.expoPushToken)
       }
     }
 
@@ -132,11 +101,8 @@ router.post('/postNotif', async (req, res) => {
           let { status, details } = receipts[informations]
           console.log("receipts informations :", receipts[informations])
 
-          if (status === 'error') {
+          if (status === 'error' || details && details.error) {
             console.log("ReceiptId error :", receipts[informations])
-            if (details && details.error && !tokensToSuppress.some(e => e === details.expoPushToken)) {
-              tokensToSuppress.push(details.expoPushToken)
-            }
           }
         }
 
@@ -145,18 +111,10 @@ router.post('/postNotif', async (req, res) => {
       }
     }
 
-    // Suppression des push tokens à problèmes
-    if (tokensToSuppress.length > 0) {
-      for (let pushToken of tokensToSuppress) {
-        await User.updateOne({push_token : pushToken}, {push_token : ""})
-      }
-    }
-
-    res.json({ tickets })
+    res.json({ allReceipts, tickets})
   }
   catch (error) {
     res.json({ error })
-    console.log(error)
   }
 });
 

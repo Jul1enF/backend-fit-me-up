@@ -9,11 +9,15 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var userModificationsRouter = require('./routes/userModifications')
+var articlesRouter = require('./routes/articles')
 
 var app = express();
 
 const cors = require('cors')
 app.use(cors())
+
+const fileUpload = require('express-fileupload');
+app.use(fileUpload());
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -24,5 +28,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/userModifications', userModificationsRouter)
+app.use('/articles', articlesRouter)
 
 module.exports = app;

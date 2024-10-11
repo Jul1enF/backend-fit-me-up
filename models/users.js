@@ -7,10 +7,10 @@ const userSchema = mongoose.Schema({
     password : String,
     inscription_date :Date,
     is_verified : Boolean,
-    is_admin : {type : Boolean, default : false},
+    is_admin : {type : Boolean, default : true},
     token : String,
     push_token : String,
-    bookmarks : Object,
+    bookmarks : [{ type: mongoose.Schema.Types.ObjectId, ref: 'articles' }],
 })
 
 const User = mongoose.model('users', userSchema)

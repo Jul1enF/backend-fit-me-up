@@ -43,11 +43,12 @@ router.post('/signup', async (req, res) => {
       })
       const data = await newUser.save()
 
-      res.json({ result: true, jwtToken, firstname })
+      res.json({ result: true, jwtToken, firstname, is_admin : data.is_admin })
     }
   }
   catch (err) {
     res.json({ err })
+    console.log(err)
   }
 });
 

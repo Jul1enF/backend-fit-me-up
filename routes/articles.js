@@ -84,15 +84,21 @@ router.post('/save-article/:title/:sub_title/:text/:author/:video_id/:category/:
             const photoPath = `${tmpUrl}/${uniqid()}.jpg`
             const resultMove = await req.files.articlePicture.mv(photoPath);
 
-            if (!resultMove) {
+            if (resultMove) {
+                res.json({ result: false, error: "Problème lors de l'upload de l'image" })
+            }
+            else {
                 const resultCloudinary = await cloudinary.uploader.upload(photoPath,
                     { folder: "fit-me-up", resource_type: 'image' })
 
                 fs.unlinkSync(photoPath)
 
+                if (!resultCloudinary.secure_url) {
+                    res.json({ result: false, error: "Problème d'enregistrement de l'image dans le cloud" })
+                }
 
                 // L'enregistrement dans le cloud a fonctionné, enregistrement de l'article en BDD
-                if (resultCloudinary.secure_url) {
+                else {
                     const newImgLink = resultCloudinary.secure_url
 
                     const newArticle = new Article({
@@ -108,12 +114,113 @@ router.post('/save-article/:title/:sub_title/:text/:author/:video_id/:category/:
 
                     const articleSaved = await newArticle.save()
 
+
+                    // Envoi d'une notification pour prévenir les utilisateurs du post
+
+                    let frenchCategory
+                    if(category === "recipes"){frenchCategory = "recette"}
+                    else if (category === "exercices"){ frenchCategory="exercice"}
+                    else {frenchCategory = "évènement"}
+
+                    const postMessage = frenchCategory === "recette" ? `Une nouvelle ${frenchCategory} a été postée !` : `Un nouvel ${frenchCategory} a été posté !`
+
+
+                    let expo = new Expo({
+                        accessToken: process.env.EXPO_ACCESS_TOKEN,
+                        useFcmV1: true,
+                    });
+
+                    const allUsers = await User.find()
+
+                    let messages = []
+
+                    for (let user of allUsers) {
+                        if (!Expo.isExpoPushToken(user.push_token)) {
+                            console.log(`Push token ${user.push_token} is not a valid Expo push token`);
+                        }
+                        else {
+                            messages.push({
+                                to: user.push_token,
+                                sound: 'default',
+                                title: "Nouveau post !",
+                                body: postMessage,
+                            })
+                        }
+                    }
+
+
+                    let chunks = expo.chunkPushNotifications(messages);
+                    let tickets = [];
+
+                    for (let chunk of chunks) {
+                        try {
+                            let ticketChunk = await expo.sendPushNotificationsAsync(chunk)
+                            console.log("Recivedticket :", ticketChunk)
+                            tickets.push(...ticketChunk)
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    }
+
+                    // Vérification de la présence d'erreur dans les tickets de reçu (Google et Apple peuvent bloquer une app qui envoie des notifications pas reçues)
+
+
+                    // Tri des tickets pour ne garder que ceux qui ont franchi la première étape (envoi) et contiennent une ID
+
+                    let ticketsWithId = [];
+
+                    let tokensToSuppress = []
+
+                    for (let ticket of tickets) {
+                        if (ticket.status === 'ok') {
+                            ticketsWithId.push(ticket.id);
+                        }
+                        else {
+                            console.log("Bad ticket : ", ticket)
+                            tokensToSuppress.push(ticket.details.expoPushToken)
+                        }
+                    }
+
+
+                    // Extraction des ID des tickets contenant des informations supplémentaires (notamment si erreur)
+
+                    // Extraction des id
+                    let ticketsIdChunks = expo.chunkPushNotificationReceiptIds(ticketsWithId);
+
+                    // Lecture des infos des id
+                    for (let chunk of ticketsIdChunks) {
+                        try {
+                            let receipts = await expo.getPushNotificationReceiptsAsync(chunk);
+                            console.log("Receipts :", receipts);
+
+                            // Boucle juste pour remplacer par une variable le nom du champ (qui est une id qu'on ne connait pas) et pouvoir accéder à son contenu.
+                            for (let informations in receipts) {
+                                let { status, details } = receipts[informations]
+                                console.log("receipts informations :", receipts[informations])
+
+                                if (status === 'error') {
+                                    console.log("ReceiptId error :", receipts[informations])
+                                    if (details && details.error && !tokensToSuppress.some(e => e === details.expoPushToken)) {
+                                        tokensToSuppress.push(details.expoPushToken)
+                                    }
+                                }
+                            }
+
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    }
+
+                    // Suppression des push tokens à problèmes
+                    if (tokensToSuppress.length > 0) {
+                        for (let pushToken of tokensToSuppress) {
+                            await User.updateOne({ push_token: pushToken }, { push_token: "" })
+                        }
+                    }
+
                     res.json({ result: true, url: resultCloudinary.secure_url })
                 }
-
-                else { res.json({ result: false, error: "Problème d'enregistrement de l'image dans le cloud" }) }
-
-            } else { res.json({ result: false, error: "Problème lors de l'upload de l'image" }) }
+            }
 
         }
 

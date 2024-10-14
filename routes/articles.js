@@ -237,14 +237,16 @@ router.get('/getArticles', async (req, res) => {
     try {
         const articles = await Article.find()
 
-        if (articles) {
-            res.json({ result: true, articles })
+        if (articles){
+            res.json({ result: true, articles})
+            
         }
         else {
             res.json({ result: false, error: "Pas d'articles" })
         }
 
     } catch (err) {
+        console.log("err :", err)
         res.json({ err })
     }
 })

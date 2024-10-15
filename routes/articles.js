@@ -6,6 +6,7 @@ const User = require('../models/users')
 
 const jwt = require('jsonwebtoken')
 const secretToken = process.env.SECRET_TOKEN
+const jwtKey = process.env.JWT_KEY
 
 const uniqid = require('uniqid');
 const cloudinary = require('cloudinary').v2;
@@ -17,15 +18,18 @@ const { Expo } = require('expo-server-sdk')
 
 // Route pour poster ou modifier un article
 
-router.post('/save-article/:title/:sub_title/:text/:author/:video_id/:category/:date/:_id/:jwtToken/:localPic', async (req, res) => {
+router.post('/save-article/:articleData', async (req, res) => {
     try {
 
-        const { title, sub_title, text, author, video_id, category, date, _id, jwtToken, localPic } = req.params
+        const decryptedData = jwt.verify(req.params.articleData, jwtKey)
+
+        const { title, sub_title, text, author, video_id, category, date, _id, jwtToken, localPic } = decryptedData
 
         const tmpUrl = process.env.TMP_URL
 
         const createdAt = new Date(date)
 
+        console.log("type of",typeof localPic)
         const decryptedToken = jwt.verify(jwtToken, secretToken)
         let user = await User.findOne({ token: decryptedToken.token })
 
@@ -42,7 +46,7 @@ router.post('/save-article/:title/:sub_title/:text/:author/:video_id/:category/:
 
 
             // Si nouvelle photo, enregistrement dans le cloud de celle ci
-            if (localPic = "true") {
+            if (localPic) {
                 const photoPath = `${tmpUrl}/${uniqid()}.jpg`
                 const resultMove = await req.files.articlePicture.mv(photoPath);
 

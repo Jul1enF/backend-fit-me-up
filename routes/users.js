@@ -43,7 +43,7 @@ router.post('/signup', async (req, res) => {
       })
       const data = await newUser.save()
 
-      res.json({ result: true, jwtToken, firstname, is_admin : data.is_admin })
+      res.json({ result: true, jwtToken, firstname, is_admin: data.is_admin })
     }
   }
   catch (err) {
@@ -53,5 +53,36 @@ router.post('/signup', async (req, res) => {
 });
 
 
+// Router Signin pour se connecter
+
+router.post('/signin', async (req, res) => {
+  try {
+    const { email, password } = req.body
+
+    const userData = await User.findOne({ email })
+
+    if (!userData || !bcrypt.compareSync(password, userData.password)) {
+      res.json({ result: false, error: "Email ou mot de passe incorrect !" })
+      return
+    }
+   else{
+    const token = uid2(32)
+    const newJwtToken = jwt.sign({
+      token,
+    }, secretToken)
+
+
+   userData.token = token
+
+   await userData.save()
+
+   res.json({ result : true, firstname : userData.firstname, jwtToken : newJwtToken, is_admin : userData.is_admin, push_token : userData.push_token, bookmarks : userData.bookmarks})
+
+   }
+  } catch (err) {
+    console.log(err)
+    res.json({ result: false, err })
+  }
+})
 
 module.exports = router;

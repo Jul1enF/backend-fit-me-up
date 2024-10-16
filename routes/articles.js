@@ -23,18 +23,18 @@ router.post('/save-article/:articleData', async (req, res) => {
 
         const decryptedData = jwt.verify(req.params.articleData, jwtKey)
 
-        const { title, sub_title, text, author, video_id, category, date, _id, jwtToken, localPic } = decryptedData
+        const { title, sub_title, text, author, video_id, category, date, _id, jwtToken, localPic, img_link, img_public_id } = decryptedData
 
         const tmpUrl = process.env.TMP_URL
 
         const createdAt = new Date(date)
 
-        console.log("type of",typeof localPic)
+
         const decryptedToken = jwt.verify(jwtToken, secretToken)
         let user = await User.findOne({ token: decryptedToken.token })
 
         // Vérification que l'utilisateur postant est bien admin
-        if (!user) { return res.json({ result: false, error: 'Utilisateur non trouvé, essayez en reconnectant.' }) }
+        if (!user) { return res.json({ result: false, error: 'Utilisateur non trouvé, essayez en vous reconnectant.' }) }
 
 
 
@@ -43,9 +43,10 @@ router.post('/save-article/:articleData', async (req, res) => {
             let article = await Article.findOne({ _id })
 
             let definitivePictureUrl
+            let definitivePictureId
 
 
-            // Si nouvelle photo, enregistrement dans le cloud de celle ci
+            // Si nouvelle photo, enregistrement dans le cloud de celle ci et supression de l'ancienne
             if (localPic) {
                 const photoPath = `${tmpUrl}/${uniqid()}.jpg`
                 const resultMove = await req.files.articlePicture.mv(photoPath);
@@ -58,6 +59,10 @@ router.post('/save-article/:articleData', async (req, res) => {
 
                     if (resultCloudinary.secure_url) {
                         definitivePictureUrl = resultCloudinary.secure_url
+                        definitivePictureId = resultCloudinary.public_id
+
+                        // Supression de l'ancienne image
+                        await cloudinary.uploader.destroy(img_public_id)
                     }
 
                     else { res.json({ result: false, error: "Problème d'enregistrement de l'image dans le cloud" }) }
@@ -75,6 +80,8 @@ router.post('/save-article/:articleData', async (req, res) => {
             article.author = author
 
             article.img_link = definitivePictureUrl ? definitivePictureUrl : img_link
+
+            article.img_public_id = definitivePictureId ? definitivePictureId : img_public_id
 
             const articleModified = await article.save()
             console.log(articleModified)
@@ -104,11 +111,13 @@ router.post('/save-article/:articleData', async (req, res) => {
                 // L'enregistrement dans le cloud a fonctionné, enregistrement de l'article en BDD
                 else {
                     const newImgLink = resultCloudinary.secure_url
+                    const newImgPublicId = resultCloudinary.public_id
 
                     const newArticle = new Article({
                         title,
                         sub_title,
                         img_link: newImgLink,
+                        img_public_id : newImgPublicId,
                         video_id,
                         category,
                         text,
@@ -252,6 +261,45 @@ router.get('/getArticles', async (req, res) => {
     } catch (err) {
         console.log("err :", err)
         res.json({ err })
+    }
+})
+
+
+// Router pour supprimer un article de la bdd et son image du cloud
+
+router.delete('/delete-article/:jwtToken/:_id', async (req, res)=>{
+    try {
+        const { jwtToken, _id } = req.params
+
+        const decryptedToken = jwt.verify(jwtToken, secretToken)
+        let user = await User.findOne({ token: decryptedToken.token })
+
+        // Vérification que l'utilisateur postant est bien admin
+        if (!user) { return res.json({ result: false, error: 'Utilisateur non trouvé, essayez en vous reconnectant.' }) }
+
+        const article = await Article.findOne({_id})
+        const img_public_id = article.img_public_id
+
+        const deleteResult = await Article.deleteOne({_id})
+
+        if (deleteResult.deletedCount !== 1){
+            res.json({ result : false, error : "Problème de connexion à la base de donnée, merci de contacter le webmaster."})
+
+            return
+        }
+        else {
+            // Supression de l'article dans les favoris des utilisateurs
+            await User.updateMany({bookmarks : _id}, {$pull : { bookmarks : _id }})
+
+            // Supression de l'image du cloud
+            await cloudinary.uploader.destroy(img_public_id)
+
+            res.json({result : true})
+        }
+
+    }catch (err){
+        console.log(err)
+        res.json({result : false, err})
     }
 })
 

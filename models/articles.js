@@ -4,6 +4,7 @@ const articleSchema = mongoose.Schema({
     title : String,
     sub_title : String,
     img_link : String,
+    img_public_id : String,
     video_id : String,
     category : String,
     text : String,

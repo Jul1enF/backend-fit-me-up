@@ -23,7 +23,7 @@ router.post('/save-article/:articleData', async (req, res) => {
 
         const decryptedData = jwt.verify(req.params.articleData, jwtKey)
 
-        const { title, sub_title, text, author, video_id, category, date, _id, jwtToken, localPic, img_link, img_public_id } = decryptedData
+        const { title, sub_title, text, author, video_id, category, date, _id, jwtToken, localPic, img_link, img_public_id, img_margin_top, img_margin_left, img_zoom } = decryptedData
 
         const tmpUrl = process.env.TMP_URL
 
@@ -83,6 +83,10 @@ router.post('/save-article/:articleData', async (req, res) => {
 
             article.img_public_id = definitivePictureId ? definitivePictureId : img_public_id
 
+            article.img_margin_top = img_margin_top
+            article.img_margin_left = img_margin_left
+            article.img_zoom = img_zoom
+
             const articleModified = await article.save()
             console.log(articleModified)
 
@@ -118,6 +122,9 @@ router.post('/save-article/:articleData', async (req, res) => {
                         sub_title,
                         img_link: newImgLink,
                         img_public_id : newImgPublicId,
+                        img_margin_top,
+                        img_margin_left,
+                        img_zoom,
                         video_id,
                         category,
                         text,

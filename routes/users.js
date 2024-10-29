@@ -12,7 +12,7 @@ const { Expo } = require('expo-server-sdk')
 
 // Route signup pour s'inscrire
 
-router.post('/signup', async (req, res) => {
+router.put('/signup', async (req, res) => {
   try {
     const { firstname, name, email, password } = req.body
 

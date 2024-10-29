@@ -10,6 +10,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var userModificationsRouter = require('./routes/userModifications')
 var articlesRouter = require('./routes/articles')
+var notifications = require('./routes/notifications')
 
 var app = express();
 
@@ -29,5 +30,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/userModifications', userModificationsRouter)
 app.use('/articles', articlesRouter)
+app.use('/notifications', notifications)
 
 module.exports = app;

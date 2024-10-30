@@ -6,7 +6,7 @@ const { Expo } = require('expo-server-sdk')
 const User = require('../models/users')
 const CronNotification = require("../models/crons_notifications")
 
-const cron = require('node-cron');
+// const cron = require('node-cron');
 
 
 
@@ -228,55 +228,55 @@ const sendNotification = async (title, message) => {
 
 // Route pour modifier les crons notifications
 
-router.put('/modify-cron-notification', async (req, res) => {
-  try {
-    const { cron_notification_number, notification_title, notification_message, is_active, minute, hour, day, month } = req.body
+// router.put('/modify-cron-notification', async (req, res) => {
+//   try {
+//     const { cron_notification_number, notification_title, notification_message, is_active, minute, hour, day, month } = req.body
 
-    // Recherche de la cron notification à modifier
-    const cronNotif = await CronNotification.findOne({ cron_notification_number })
-
-
-    // Arrêt de la précédente exécution de la cron notif ciblée si elle était active
-    cronNotif.is_active && cronJobs[cron_notification_number - 1].cron.stop()
-
-    // Enregistrement de la nouvelle cron notification
-    cronNotif.notification_title = notification_title
-    cronNotif.notification_message = notification_message
-    cronNotif.is_active = is_active
-    cronNotif.minute = minute
-    cronNotif.hour = hour
-    cronNotif.day = day
-    cronNotif.month = month
-
-    await cronNotif.save()
+//     // Recherche de la cron notification à modifier
+//     const cronNotif = await CronNotification.findOne({ cron_notification_number })
 
 
-    // Return si la modification désactive la cron notification
-    if (!is_active) {
-      res.json({ result: true })
-      return
-    }
+//     // Arrêt de la précédente exécution de la cron notif ciblée si elle était active
+//     cronNotif.is_active && cronJobs[cron_notification_number - 1].cron.stop()
 
-    // Sinon reprogrammation de celle ci
-    cronJobs[cron_notification_number - 1].cron = cron.schedule(
+//     // Enregistrement de la nouvelle cron notification
+//     cronNotif.notification_title = notification_title
+//     cronNotif.notification_message = notification_message
+//     cronNotif.is_active = is_active
+//     cronNotif.minute = minute
+//     cronNotif.hour = hour
+//     cronNotif.day = day
+//     cronNotif.month = month
 
-      // Réglage date d'envoie(s)
-      `${minute} ${hour} ${day} ${month} *`, () => {
-        // Fonction pour envoyer notifs
-        sendNotification(notification_title, notification_message)
-      },
-      { scheduled: false, timezone: "Europe/Paris" })
-
-    cronJobs[cron_notification_number - 1].cron.start()
+//     await cronNotif.save()
 
 
-    res.json({ result: true })
+//     // Return si la modification désactive la cron notification
+//     if (!is_active) {
+//       res.json({ result: true })
+//       return
+//     }
 
-  } catch (err) {
-    console.log(err)
-    res.json({ result: false, err })
-  }
-})
+//     // Sinon reprogrammation de celle ci
+//     cronJobs[cron_notification_number - 1].cron = cron.schedule(
+
+//       // Réglage date d'envoie(s)
+//       `${minute} ${hour} ${day} ${month} *`, () => {
+//         // Fonction pour envoyer notifs
+//         sendNotification(notification_title, notification_message)
+//       },
+//       { scheduled: false, timezone: "Europe/Paris" })
+
+//     cronJobs[cron_notification_number - 1].cron.start()
+
+
+//     res.json({ result: true })
+
+//   } catch (err) {
+//     console.log(err)
+//     res.json({ result: false, err })
+//   }
+// })
 
 
 // Route pour télécharger la liste des crons notifications

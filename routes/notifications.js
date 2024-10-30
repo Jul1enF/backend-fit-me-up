@@ -185,13 +185,13 @@ const setCronNotifications = async (req, res, next) => {
 
 
 // Activation de la fonction
-try {
-  // setCronNotifications()
-  router.use(setCronNotifications)
+// try {
+//   // setCronNotifications()
+//   router.use(setCronNotifications)
 
-} catch (err) {
-  console.log(err)
-}
+// } catch (err) {
+//   console.log(err)
+// }
 
 
 

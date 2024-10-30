@@ -139,8 +139,32 @@ console.log("cronJobs :", cronJobs)
 
 // Fonction pour setter les crons jobs (au démarrage du serveur) s'ils sont marqués comme actifs en bdd
 
-const setCronNotifications = async () => {
- setTimeout(async()=>{
+// const setCronNotifications = async () => {
+//  setTimeout(async()=>{
+
+//   const cronNotifs = await CronNotification.find()
+//   console.log("DB Fetch previously for crons")
+//   for (let i = 0; i < cronNotifs.length; i++) {
+
+//     if (cronNotifs[i].is_active) {
+
+//       cronJobs[i].cron = cron.schedule(
+//         // Réglage date d'envoie(s)
+//         `${cronNotifs[i].minute} ${cronNotifs[i].hour} ${cronNotifs[i].day} ${cronNotifs[i].month} *`, () => {
+//           // Fonction pour envoyer notifs
+//           sendNotification(cronNotifs[i].notification_title, cronNotifs[i].notification_message)
+
+//         }, { scheduled: false, timezone: "Europe/Paris" })
+
+//       cronJobs[i].cron.start()
+//     }
+//   }
+
+//  }, "10000")
+// }
+
+
+setTimeout(async()=>{
 
   const cronNotifs = await CronNotification.find()
   console.log("DB Fetch previously for crons")
@@ -161,39 +185,16 @@ const setCronNotifications = async () => {
   }
 
  }, "10000")
-}
-
-
-// const setCronNotifications = () => {
-//    CronNotification.find().then(cronNotifs => {
-
-//     console.log("DB Fetch previously for crons")
-//     for (let i = 0; i < cronNotifs.length; i++) {
-  
-//       if (cronNotifs[i].is_active) {
-  
-//         cronJobs[i].cron = cron.schedule(
-//           // Réglage date d'envoie(s)
-//           `${cronNotifs[i].minute} ${cronNotifs[i].hour} ${cronNotifs[i].day} ${cronNotifs[i].month} *`, () => {
-//             // Fonction pour envoyer notifs
-//             sendNotification(cronNotifs[i].notification_title, cronNotifs[i].notification_message)
-  
-//           }, { scheduled: false, timezone: "Europe/Paris" })
-  
-//         cronJobs[i].cron.start()
-//       }
-//     }
-//    })
-// }
 
 
 // Activation de la fonction
-try {
-  setCronNotifications()
 
-} catch (err) {
-  console.log(err)
-}
+// try {
+//   setCronNotifications()
+
+// } catch (err) {
+//   console.log(err)
+// }
 
 
 

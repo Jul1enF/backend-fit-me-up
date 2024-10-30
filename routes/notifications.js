@@ -139,7 +139,7 @@ for (let i = 0; i < 5; i++) {
 
 const setCronNotifications = async () => {
   const cronNotifs = await CronNotification.find()
-
+  console.log("DB Fetch previously for crons")
   for (let i = 0; i < cronNotifs.length; i++) {
 
     if (cronNotifs[i].is_active) {

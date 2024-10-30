@@ -120,25 +120,25 @@ const sendNotification = async (title, message) => {
 
 // Initialisation des crons jobs à l'intérieur d'un objet dans un scope accessible à tous
 
-let cronJobs = []
+// let cronJobs = []
 
-for (let i = 0; i < 5; i++) {
+// for (let i = 0; i < 5; i++) {
 
-  cronJobs.push({
-    name: `task ${i + 1}`,
-    cron: cron.schedule("* * * * *", () => {
-      console.log(`task ${i + 1}`);
-    }, { scheduled: false })
-  })
+//   cronJobs.push({
+//     name: `task ${i + 1}`,
+//     cron: cron.schedule("* * * * *", () => {
+//       console.log(`task ${i + 1}`);
+//     }, { scheduled: false })
+//   })
  
-}
-console.log("RUN AGAIN")
+// }
+// console.log("RUN AGAIN")
 
 
 
 // Fonction pour setter les crons jobs (au démarrage du serveur) s'ils sont marqués comme actifs en bdd
 
-var app = express();
+// var app = express();
 
 
 // router.get('/setCrons', async (req, res)=>{

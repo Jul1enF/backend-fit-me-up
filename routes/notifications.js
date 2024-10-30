@@ -133,6 +133,8 @@ for (let i = 0; i < 5; i++) {
 
 }
 
+console.log("cronJobs :", cronJobs)
+
 
 
 // Fonction pour setter les crons jobs (au démarrage du serveur) s'ils sont marqués comme actifs en bdd

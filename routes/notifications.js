@@ -132,39 +132,42 @@ for (let i = 0; i < 5; i++) {
   })
  
 }
-
+console.log("RUN AGAIN")
 
 
 
 // Fonction pour setter les crons jobs (au démarrage du serveur) s'ils sont marqués comme actifs en bdd
 
-router.get('/setCrons', async (req, res)=>{
+var app = express();
 
-  console.log("DB Fetch begins")
-  const cronNotifs = await CronNotification.find()
-  console.log("DB Fetch previously for crons")
-  for (let i = 0; i < cronNotifs.length; i++) {
 
-    if (cronNotifs[i].is_active) {
+// router.get('/setCrons', async (req, res)=>{
 
-      cronJobs[i].cron = cron.schedule(
-        // Réglage date d'envoie(s)
-        `${cronNotifs[i].minute} ${cronNotifs[i].hour} ${cronNotifs[i].day} ${cronNotifs[i].month} *`, () => {
-          // Fonction pour envoyer notifs
-          sendNotification(cronNotifs[i].notification_title, cronNotifs[i].notification_message)
+//   console.log("DB Fetch begins")
+//   const cronNotifs = await CronNotification.find()
+//   console.log("DB Fetch previously for crons")
+//   for (let i = 0; i < cronNotifs.length; i++) {
 
-        }, { scheduled: false, timezone: "Europe/Paris" })
+//     if (cronNotifs[i].is_active) {
 
-      cronJobs[i].cron.start()
-    }
-  }
-res.json({result : true, cronNotifs})
+//       cronJobs[i].cron = cron.schedule(
+//         // Réglage date d'envoie(s)
+//         `${cronNotifs[i].minute} ${cronNotifs[i].hour} ${cronNotifs[i].day} ${cronNotifs[i].month} *`, () => {
+//           // Fonction pour envoyer notifs
+//           sendNotification(cronNotifs[i].notification_title, cronNotifs[i].notification_message)
 
-})
+//         }, { scheduled: false, timezone: "Europe/Paris" })
 
-fetch('https://backend-fit-me-up.vercel.app/notifications/setCrons')
-.then(response => response.json())
-.then(data => console.log(data))
+//       cronJobs[i].cron.start()
+//     }
+//   }
+// res.json({result : true, cronNotifs})
+
+// })
+
+// fetch('https://backend-fit-me-up.vercel.app/notifications/setCrons')
+// .then(response => response.json())
+// .then(data => console.log(data))
 
 // const setCronNotifications = async () => {
 

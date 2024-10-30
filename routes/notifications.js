@@ -3,7 +3,6 @@ var router = express.Router();
 
 const { Expo } = require('expo-server-sdk')
 
-require('../models/connection')
 const User = require('../models/users')
 const CronNotification = require("../models/crons_notifications")
 
@@ -115,6 +114,18 @@ const sendNotification = async (title, message) => {
 
 }
 
+// const mongoose = require('mongoose')
+// const connectionString = process.env.CONNECTION_STRING
+
+// const connection = async () =>{
+//   await mongoose.connect(connectionString, { connectTimeoutMS: 2000 })
+//   console.log('Database connected')
+// }
+
+// try {
+// connection()
+// }catch (error){console.error(error) }
+
 
 
 
@@ -139,9 +150,18 @@ for (let i = 0; i < 5; i++) {
 
 // Fonction pour setter les crons jobs (au démarrage du serveur) s'ils sont marqués comme actifs en bdd
 
+const mongoose = require('mongoose')
+const connectionString = process.env.CONNECTION_STRING
+
 const setCronNotifications = async () => {
+
+  await mongoose.connect(connectionString, { connectTimeoutMS: 2000 })
+  console.log('Database2 connected')
+
+
+  console.log("DB Fetch begins")
   const cronNotifs = await CronNotification.find()
-  console.log("DB Fetch previously for crons", cronNotifs)
+  console.log("DB Fetch previously for crons")
   for (let i = 0; i < cronNotifs.length; i++) {
 
     if (cronNotifs[i].is_active) {

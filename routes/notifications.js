@@ -184,7 +184,7 @@ setTimeout(async()=>{
     }
   }
 
- }, "10000")
+ }, 15000)
 
 
 // Activation de la fonction

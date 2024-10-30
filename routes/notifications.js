@@ -139,7 +139,9 @@ console.log("cronJobs :", cronJobs)
 
 // Fonction pour setter les crons jobs (au démarrage du serveur) s'ils sont marqués comme actifs en bdd
 
-const setCronNotifications = async (req, res, next) => {
+const setCronNotifications = async () => {
+ setTimeout(async()=>{
+
   const cronNotifs = await CronNotification.find()
   console.log("DB Fetch previously for crons")
   for (let i = 0; i < cronNotifs.length; i++) {
@@ -157,7 +159,8 @@ const setCronNotifications = async (req, res, next) => {
       cronJobs[i].cron.start()
     }
   }
-  next()
+
+ }, "10000")
 }
 
 
@@ -185,13 +188,12 @@ const setCronNotifications = async (req, res, next) => {
 
 
 // Activation de la fonction
-// try {
-//   // setCronNotifications()
-//   router.use(setCronNotifications)
+try {
+  setCronNotifications()
 
-// } catch (err) {
-//   console.log(err)
-// }
+} catch (err) {
+  console.log(err)
+}
 
 
 

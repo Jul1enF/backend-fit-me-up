@@ -140,35 +140,45 @@ console.log("RUN AGAIN")
 // }
 
 
+const { AsyncLocalStorage } = require('node:async_hooks');
 
+const storage = new AsyncLocalStorage()
+
+storage.enterWith(1)
+
+console.log("storage 1 :", storage.getStore())
+
+storage.enterWith(storage.getStore()+1)
+
+console.log("storage 2 :",storage.getStore())
 
 // Route pour récupérer en bdd les crons notifs puis fetch pour appeler celle ci et régler les crons jobs
 
-app.locals.cronJobs = []
+// app.locals.cronJobs = []
 
 
-router.get('/setCrons', async (req, res) => {
+// router.get('/setCrons', async (req, res) => {
 
-  console.log("DB Fetch begins")
-  const cronNotifs = await CronNotification.find()
-  console.log("DB Fetch previously for crons")
+//   console.log("DB Fetch begins")
+//   const cronNotifs = await CronNotification.find()
+//   console.log("DB Fetch previously for crons")
 
 
-  for (let i = 0; i < cronNotifs.length; i++) {
+//   for (let i = 0; i < cronNotifs.length; i++) {
 
-    app.locals.cronJobs.push({
-      name : `cron ${i+1}`,
-      cron : cron.schedule(
+//     app.locals.cronJobs.push({
+//       name : `cron ${i+1}`,
+//       cron : cron.schedule(
 
-        // Réglage date d'envoie(s)
-        `${cronNotifs[i].minute} ${cronNotifs[i].hour} ${cronNotifs[i].day} ${cronNotifs[i].month} *`, () => {
+//         // Réglage date d'envoie(s)
+//         `${cronNotifs[i].minute} ${cronNotifs[i].hour} ${cronNotifs[i].day} ${cronNotifs[i].month} *`, () => {
 
-        // Fonction pour envoyer notifs
-        sendNotification(cronNotifs[i].notification_title, cronNotifs[i].notification_message)
+//         // Fonction pour envoyer notifs
+//         sendNotification(cronNotifs[i].notification_title, cronNotifs[i].notification_message)
 
-      }, { scheduled: false, timezone: "Europe/Paris" })
-    })
-  }
+//       }, { scheduled: false, timezone: "Europe/Paris" })
+//     })
+//   }
 
 
   // for (let i = 0; i < cronNotifs.length; i++) {
@@ -187,25 +197,25 @@ router.get('/setCrons', async (req, res) => {
   //   }] 
   // }
 
-  console.log("APP.LOCALS 3:", app.locals.cronJobs)
- res.json({result : true})
+//   console.log("APP.LOCALS 3:", app.locals.cronJobs)
+//  res.json({result : true})
   // res.json({ result: true, cronNotifs })
 
-})
+// })
 
-console.log("APP.LOCALS 1:", app.locals.cronJobs)
-
-
+// console.log("APP.LOCALS 1:", app.locals.cronJobs)
 
 
 
-if (app.locals.cronJobs.length == 0){
 
 
-  fetch(`${process.env.BACK_ADDRESS}/notifications/setCrons`)
-  .then(response => response.json())
-  .then(data => {
-  console.log(data)
+// if (app.locals.cronJobs.length == 0){
+
+
+//   fetch(`${process.env.BACK_ADDRESS}/notifications/setCrons`)
+//   .then(response => response.json())
+//   .then(data => {
+//   console.log(data)
 
 
       // if (data.cronNotifs[i].is_active) {
@@ -223,12 +233,12 @@ if (app.locals.cronJobs.length == 0){
       //   cronJobs[i].cron.start()
       // }
 
-  })
+//   })
 
   
-}
+// }
 
-console.log("APP.LOCALS 2:", app.locals.cronJobs)
+// console.log("APP.LOCALS 2:", app.locals.cronJobs)
 
 
 // fetch(`${process.env.BACK_ADDRESS}/notifications/setCrons`)
@@ -318,7 +328,7 @@ router.get('/get-crons-notifications', async (req, res) => {
     const data = await CronNotification.find()
 
     if (data.length > 1) {
-      res.json({ result: true, cronsNotifications: data, appLocal : app.locals.cronJobs })
+      res.json({ result: true, cronsNotifications: data })
     }
     else {
       console.log(data)

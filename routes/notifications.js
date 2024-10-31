@@ -140,17 +140,17 @@ console.log("RUN AGAIN")
 // }
 
 
-const { AsyncLocalStorage } = require('node:async_hooks');
+// const { AsyncLocalStorage } = require('node:async_hooks');
 
-const storage = new AsyncLocalStorage()
+// const storage = new AsyncLocalStorage()
 
-storage.enterWith(1)
+// storage.enterWith(1)
 
-console.log("storage 1 :", storage.getStore())
+// console.log("storage 1 :", storage.getStore())
 
-storage.enterWith(storage.getStore()+1)
+// storage.enterWith(storage.getStore()+1)
 
-console.log("storage 2 :",storage.getStore())
+// console.log("storage 2 :",storage.getStore())
 
 // Route pour récupérer en bdd les crons notifs puis fetch pour appeler celle ci et régler les crons jobs
 

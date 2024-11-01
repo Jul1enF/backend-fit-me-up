@@ -5,10 +5,10 @@ const cronNotificationSchema = mongoose.Schema({
     notification_title : String,
     notification_message : String,
     is_active : Boolean,
-    minute : Array,
-    hour : Array,
-    day : Array,
-    month : Array,
+    minute : [Number],
+    hour : [Number],
+    day : [Number],
+    month : [Number],
     cron_id : String,
 })
 

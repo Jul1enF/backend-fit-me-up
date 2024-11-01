@@ -9,6 +9,7 @@ const cronNotificationSchema = mongoose.Schema({
     hour : String,
     day : String,
     month : String,
+    cron_id : String,
 })
 
 const CronNotification = mongoose.model('crons_notifications', cronNotificationSchema)

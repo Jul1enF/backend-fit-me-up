@@ -172,7 +172,8 @@ router.put('/register-cron-notification', async (req, res) => {
           minutes : minute,
           months : month,
           wdays : [-1]
-        }
+        },
+        requestMethod : 4,
       }
 
 console.log("JOB :",job)

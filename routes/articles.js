@@ -34,7 +34,7 @@ router.post('/save-article/:articleData', async (req, res) => {
         let user = await User.findOne({ token: decryptedToken.token })
 
         // Vérification que l'utilisateur postant est bien admin
-        if (!user) { return res.json({ result: false, error: 'Utilisateur non trouvé, essayez en vous reconnectant.' }) }
+        if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
 
 
 

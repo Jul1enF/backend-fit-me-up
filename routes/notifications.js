@@ -6,7 +6,14 @@ const { Expo } = require('expo-server-sdk')
 const User = require('../models/users')
 const CronNotification = require("../models/crons_notifications")
 
+const jwt = require('jsonwebtoken')
+const secretToken = process.env.SECRET_TOKEN
+
 const cronKey = process.env.CRON_KEY
+
+
+
+
 
 // Fonction pour envoyer une notification
 
@@ -139,7 +146,15 @@ router.put('/send-notification', async (req, res) => {
 
 router.put('/register-cron-notification', async (req, res) => {
   try {
-    const { notification_title, notification_message, is_active, minute, hour, day, month } = req.body
+    const { notification_title, notification_message, is_active, minute, hour, day, month, jwtToken } = req.body
+
+
+    const decryptedToken = jwt.verify(jwtToken, secretToken)
+    let user = await User.findOne({ token: decryptedToken.token })
+  
+    // Vérification que l'utilisateur postant est bien admin
+    if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
+  
 
     // Enregistrement de la nouvelle cron notification
 
@@ -228,12 +243,23 @@ router.put('/send-cron-notification/:_id', async (req, res) => {
 
 })
 
-// Route pour modifier les crons notifications
+
+
+
+// Route pour modifier une cron notification
 
 
 router.put('/modify-cron-notification', async (req, res) => {
   try {
-    const { notification_title, notification_message, is_active, minute, hour, day, month, _id, cron_id } = req.body
+    const { notification_title, notification_message, is_active, minute, hour, day, month, _id, cron_id, jwtToken } = req.body
+
+
+    const decryptedToken = jwt.verify(jwtToken, secretToken)
+    let user = await User.findOne({ token: decryptedToken.token })
+  
+    // Vérification que l'utilisateur postant est bien admin
+    if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
+  
 
     // Recherche de la cron notification à modifier
     const cronNotif = await CronNotification.findOne({ _id })
@@ -281,7 +307,7 @@ router.put('/modify-cron-notification', async (req, res) => {
     })
 
     const data = await response.json()
-    console.log("DATA :", data)
+    console.log("DATA MODIFY :", data)
 
     res.json({ result: true, cronSaved })
 
@@ -290,6 +316,51 @@ router.put('/modify-cron-notification', async (req, res) => {
     res.json({ result: false, err })
   }
 })
+
+
+
+
+// Route pour supprimer une cron notification
+
+router.delete('/delete-cron-notification/:cron_id/:jwtToken', async (req, res) => {
+
+  let { cron_id, jwtToken } = req.params
+
+  const decryptedToken = jwt.verify(jwtToken, secretToken)
+  let user = await User.findOne({ token: decryptedToken.token })
+
+  // Vérification que l'utilisateur postant est bien admin
+  if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
+
+
+  cron_id = Number(cron_id)
+
+  const answer = await CronNotification.deleteOne({cron_id})
+
+  console.log(answer)
+
+  if (answer.deletedCount !== 1){
+    res.json({result : false, error : "Problème de connexion à la base de donnée. Merci de réassayer après avoir relancé l'appli."})
+    return
+  }
+
+  const response  = await fetch(`https://api.cron-job.org/jobs/${cron_id}`, { 
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${cronKey}`
+    }
+  })
+
+  const data = await response.json()
+
+  console.log("DATA DELETE :", data)
+
+  res.json({result : true})
+
+})
+
+
 
 
 

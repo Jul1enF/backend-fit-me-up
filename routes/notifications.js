@@ -171,7 +171,7 @@ router.put('/register-cron-notification', async (req, res) => {
           mdays : day,
           minutes : minute,
           months : month,
-          wdays : [0]
+          wdays : [-1]
         }
       }
 

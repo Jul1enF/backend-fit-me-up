@@ -266,7 +266,7 @@ router.put('/modify-cron-notification', async (req, res) => {
         months: month,
         wdays: [-1]
       },
-      requestMethod: 8,
+      requestMethod: 4,
     }
 
     const response = await fetch(`https://api.cron-job.org/jobs/${cron_id}`, {

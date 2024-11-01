@@ -155,52 +155,47 @@ router.put('/register-cron-notification', async (req, res) => {
 
     const cronSaved = await newCron.save()
 
-     // Si la notif est active, création de l'objet au format demandé par cron-job.org pour l'enregistrer chez ceux ci
-    
-     if (is_active){
-      const id = cronSaved._id.toString()
+    // Création de l'objet au format demandé par cron-job.org pour l'enregistrer chez ceux ci
 
-      const job = {
-        url : `https://backend-fit-me-up.vercel.app/notifications/send-cron-notification/${id}`,
-        enabled : is_active,
-        saveResponses : true,
-        schedule : {
-          timezone : "Europe/Paris",
-          expiresAt : 0,
-          hours : hour,
-          mdays : day,
-          minutes : minute,
-          months : month,
-          wdays : [-1]
-        },
-        requestMethod : 4,
-      }
+    const id = cronSaved._id.toString()
 
-console.log("JOB :",job)
+    const job = {
+      url: `https://backend-fit-me-up.vercel.app/notifications/send-cron-notification/${id}`,
+      enabled: is_active,
+      saveResponses: true,
+      schedule: {
+        timezone: "Europe/Paris",
+        expiresAt: 0,
+        hours: hour,
+        mdays: day,
+        minutes: minute,
+        months: month,
+        wdays: [-1]
+      },
+      requestMethod: 4,
+    }
 
-      const response = await fetch(`https://api.cron-job.org/jobs`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${cronKey}`
-         },
-        body: JSON.stringify({
-         job,
-        })
+    console.log("JOB :", job)
+
+    const response = await fetch(`https://api.cron-job.org/jobs`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cronKey}`
+      },
+      body: JSON.stringify({
+        job,
+      })
     })
-  
+
     const data = await response.json()
     console.log("DATA :", data)
 
     cronSaved.cron_id = data.jobId
 
-    const crondSavedAgain = await cronSaved.save()
+    const cronSavedAgain = await cronSaved.save()
 
-    console.log("FINAL CRON SAVE :", crondSavedAgain)
-  
-    }
-
-    res.json({ result: true })
+    res.json({ result: true, cronSavedAgain })
 
   } catch (err) {
     console.log(err)
@@ -215,20 +210,20 @@ console.log("JOB :",job)
 
 router.put('/send-cron-notification/:_id', async (req, res) => {
 
-try {
+  try {
 
-  const {_id} = req.params
+    const { _id } = req.params
 
-const notification = await CronNotification.findOne({_id})
+    const notification = await CronNotification.findOne({ _id })
 
-await sendNotification(notification.notification_title, notification.notification_message)
+    await sendNotification(notification.notification_title, notification.notification_message)
 
-res.json({result : true})
+    res.json({ result: true })
 
-}catch (err){
-res.json({result : false})
-console.log(err)
-}
+  } catch (err) {
+    res.json({ result: false })
+    console.log(err)
+  }
 
 
 })
@@ -236,18 +231,13 @@ console.log(err)
 // Route pour modifier les crons notifications
 
 
-// PENSER À VÉRIFIER SI LA CRON NOTIF EN BDD À UNE CRON-ID
-
 router.put('/modify-cron-notification', async (req, res) => {
   try {
-    const { cron_notification_number, notification_title, notification_message, is_active, minute, hour, day, month } = req.body
+    const { notification_title, notification_message, is_active, minute, hour, day, month, _id, cron_id } = req.body
 
     // Recherche de la cron notification à modifier
-    const cronNotif = await CronNotification.findOne({ cron_notification_number })
+    const cronNotif = await CronNotification.findOne({ _id })
 
-
-    // Arrêt de la précédente exécution de la cron notif ciblée si elle était active
-    cronNotif.is_active && cronJobs[cron_notification_number - 1].cron.stop()
 
     // Enregistrement de la nouvelle cron notification
     cronNotif.notification_title = notification_title
@@ -258,29 +248,42 @@ router.put('/modify-cron-notification', async (req, res) => {
     cronNotif.day = day
     cronNotif.month = month
 
-    await cronNotif.save()
+    const cronSaved = await cronNotif.save()
 
 
-    // Return si la modification désactive la cron notification
-    if (!is_active) {
-      res.json({ result: true })
-      return
+    // Mise en forme de l'object à envoyer à cron-job.org
+
+    const job = {
+      url: `https://backend-fit-me-up.vercel.app/notifications/send-cron-notification/${_id}`,
+      enabled: is_active,
+      saveResponses: true,
+      schedule: {
+        timezone: "Europe/Paris",
+        expiresAt: 0,
+        hours: hour,
+        mdays: day,
+        minutes: minute,
+        months: month,
+        wdays: [-1]
+      },
+      requestMethod: 8,
     }
 
-    // Sinon reprogrammation de celle ci
-    cronJobs[cron_notification_number - 1].cron = cron.schedule(
-
-      // Réglage date d'envoie(s)
-      `${minute} ${hour} ${day} ${month} *`, () => {
-        // Fonction pour envoyer notifs
-        sendNotification(notification_title, notification_message)
+    const response = await fetch(`https://api.cron-job.org/jobs/${cron_id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cronKey}`
       },
-      { scheduled: false, timezone: "Europe/Paris" })
+      body: JSON.stringify({
+        job,
+      })
+    })
 
-    cronJobs[cron_notification_number - 1].cron.start()
+    const data = await response.json()
+    console.log("DATA :", data)
 
-
-    res.json({ result: true })
+    res.json({ result: true, cronSaved })
 
   } catch (err) {
     console.log(err)
@@ -314,174 +317,3 @@ router.get('/get-crons-notifications', async (req, res) => {
 
 
 module.exports = router;
-
-
-
-
-
-// Route pour enregistrer une nouvelle cron notif (via ThunderClient)
-
-
-// router.post('/post', async (req, res)=>{
-//   const { cron_notification_number, notification_title, notification_message, is_active, minute, hour, day, month } = req.body
-
-// const newCronNotification = new CronNotification({
-//   cron_notification_number,
-//   notification_title,
-//   notification_message,
-//   is_active,
-//   minute,
-//   hour,
-//   day,
-//   month
-// })
-
-// await newCronNotification.save()
-
-// res.json({result : true})
-
-// })
-
-
-
-
-// Initialisation des crons jobs à l'intérieur d'un objet dans un scope accessible à tous
-
-
-// let cronJobs = []
-
-// for (let i = 0; i < 10; i++) {
-
-//   cronJobs.push({
-//     name: `task ${i + 1}`,
-//     cron: cron.schedule("* * * * *", () => {
-//       console.log(`task ${i + 1}`);
-//     }, { scheduled: false })
-//   })
-
-// }
-
-
-// const { AsyncLocalStorage } = require('node:async_hooks');
-
-// const storage = new AsyncLocalStorage()
-
-// storage.enterWith(1)
-
-// console.log("storage 1 :", storage.getStore())
-
-// storage.enterWith(storage.getStore()+1)
-
-// console.log("storage 2 :",storage.getStore())
-
-// Route pour récupérer en bdd les crons notifs puis fetch pour appeler celle ci et régler les crons jobs
-
-// app.locals.cronJobs = []
-
-
-// router.get('/setCrons', async (req, res) => {
-
-//   console.log("DB Fetch begins")
-//   const cronNotifs = await CronNotification.find()
-//   console.log("DB Fetch previously for crons")
-
-
-//   for (let i = 0; i < cronNotifs.length; i++) {
-
-//     app.locals.cronJobs.push({
-//       name : `cron ${i+1}`,
-//       cron : cron.schedule(
-
-//         // Réglage date d'envoie(s)
-//         `${cronNotifs[i].minute} ${cronNotifs[i].hour} ${cronNotifs[i].day} ${cronNotifs[i].month} *`, () => {
-
-//         // Fonction pour envoyer notifs
-//         sendNotification(cronNotifs[i].notification_title, cronNotifs[i].notification_message)
-
-//       }, { scheduled: false, timezone: "Europe/Paris" })
-//     })
-//   }
-
-
-  // for (let i = 0; i < cronNotifs.length; i++) {
-
-  //   req.app.locals.cronJobs = [...app.locals.cronJobs, {
-  //     name : `cron ${i+1}`,
-  //     cron : cron.schedule(
-
-  //       // Réglage date d'envoie(s)
-  //       `${cronNotifs[i].minute} ${cronNotifs[i].hour} ${cronNotifs[i].day} ${cronNotifs[i].month} *`, () => {
-
-  //       // Fonction pour envoyer notifs
-  //       sendNotification(cronNotifs[i].notification_title, cronNotifs[i].notification_message)
-
-  //     }, { scheduled: false, timezone: "Europe/Paris" })
-  //   }] 
-  // }
-
-//   console.log("APP.LOCALS 3:", app.locals.cronJobs)
-//  res.json({result : true})
-  // res.json({ result: true, cronNotifs })
-
-// })
-
-// console.log("APP.LOCALS 1:", app.locals.cronJobs)
-
-
-
-
-
-// if (app.locals.cronJobs.length == 0){
-
-
-//   fetch(`${process.env.BACK_ADDRESS}/notifications/setCrons`)
-//   .then(response => response.json())
-//   .then(data => {
-//   console.log(data)
-
-
-      // if (data.cronNotifs[i].is_active) {
-
-      //   cronJobs[i].cron = cron.schedule(
-
-      //     // Réglage date d'envoie(s)
-      //     `${data.cronNotifs[i].minute} ${data.cronNotifs[i].hour} ${data.cronNotifs[i].day} ${data.cronNotifs[i].month} *`, () => {
-
-      //     // Fonction pour envoyer notifs
-      //     sendNotification(data.cronNotifs[i].notification_title, data.cronNotifs[i].notification_message)
-
-      //   }, { scheduled: false, timezone: "Europe/Paris" })
-
-      //   cronJobs[i].cron.start()
-      // }
-
-//   })
-
-  
-// }
-
-// console.log("APP.LOCALS 2:", app.locals.cronJobs)
-
-
-// fetch(`${process.env.BACK_ADDRESS}/notifications/setCrons`)
-//   .then(response => response.json())
-//   .then(data => {
-//     console.log(data)
-//     for (let i = 0; i < data.cronNotifs.length; i++) {
-
-//       if (data.cronNotifs[i].is_active) {
-
-//         cronJobs[i].cron = cron.schedule(
-
-//           // Réglage date d'envoie(s)
-//           `${data.cronNotifs[i].minute} ${data.cronNotifs[i].hour} ${data.cronNotifs[i].day} ${data.cronNotifs[i].month} *`, () => {
-
-//           // Fonction pour envoyer notifs
-//           sendNotification(data.cronNotifs[i].notification_title, data.cronNotifs[i].notification_message)
-
-//         }, { scheduled: false, timezone: "Europe/Paris" })
-
-//         cronJobs[i].cron.start()
-//       }
-//     }
-//   })

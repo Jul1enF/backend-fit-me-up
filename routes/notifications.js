@@ -221,7 +221,7 @@ try {
 
 const notification = await CronNotification.findOne({_id})
 
-sendNotification(notification.notification_title, notification.notification_message)
+await sendNotification(notification.notification_title, notification.notification_message)
 
 res.json({result : true})
 

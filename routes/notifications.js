@@ -159,8 +159,6 @@ router.put('/register-cron-notification', async (req, res) => {
     
      if (is_active){
       const id = cronSaved._id.toString()
-     
-      console.log("ID :", id)
 
       const job = {
         url : `https://backend-fit-me-up.vercel.app/notifications/send-cron-notification/${id}`,
@@ -171,10 +169,12 @@ router.put('/register-cron-notification', async (req, res) => {
           expiresAt : 0,
           hours : hour,
           mdays : day,
-          months : month,
           minutes : minute,
+          months : month,
         }
       }
+
+console.log("JOB :",job)
 
       const response = await fetch(`https://api.cron-job.org/jobs`, {
         method: 'PUT',

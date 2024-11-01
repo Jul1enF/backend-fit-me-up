@@ -223,6 +223,8 @@ const notification = await CronNotification.findOne({_id})
 
 sendNotification(notification.notification_title, notification.notification_message)
 
+res.json({result : true})
+
 }catch (err){
 res.json({result : false})
 console.log(err)

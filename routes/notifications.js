@@ -1,13 +1,12 @@
 var express = require('express');
 var router = express.Router();
-var app = express()
 
 const { Expo } = require('expo-server-sdk')
 
 const User = require('../models/users')
 const CronNotification = require("../models/crons_notifications")
 
-
+const cronKey = process.env.CRON_KEY
 
 // Fonction pour envoyer une notification
 
@@ -156,38 +155,48 @@ router.put('/register-cron-notification', async (req, res) => {
 
     const cronSaved = await newCron.save()
 
-    console.log("CRON SAVED :",cronSaved)
-
-     // Création de l'objet au format demandé par cron-job.org
-     const {_id} = cronSaved
+     // Si la notif est active, création de l'objet au format demandé par cron-job.org pour l'enregistrer chez ceux ci
+    
+     if (is_active){
+      const id = cronSaved._id.toString()
      
-     console.log("ID :", _id)
+      console.log("ID :", id)
 
-     const job = {
-      url : "https://backend-fit-me-up.vercel.app"
+      const job = {
+        url : `https://backend-fit-me-up.vercel.app/notifications/send-cron-notification/${id}`,
+        enabled : is_active,
+        saveResponses : true,
+        schedule : {
+          timezone : "Europe/Paris",
+          expiresAt : 0,
+          hours : hour,
+          mdays : day,
+          months : month,
+          minutes : minute,
+        }
+      }
+
+      const response = await fetch(`https://api.cron-job.org/jobs`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${cronKey}`
+         },
+        body: JSON.stringify({
+         body,
+        })
+    })
+  
+    const data = await response.json()
+    console.log("DATA :", data)
+
+    cronSaved.cron_id = data.jobId
+
+    const crondSavedAgain = await cronSaved.save()
+
+    console.log("FINAL CRON SAVE :", crondSavedAgain)
+  
     }
-
-
-  //   const response = await fetch(`https://api.cron-job.org/jobs`, {
-  //     method: 'PUT',
-  //     headers: { 
-  //       'Content-Type': 'application/json',
-  //       'Authorization': `Bearer ${apiKey}`
-  //      },
-  //     body: JSON.stringify({
-  //         cron_notification_number: originalCronNotif.cron_notification_number,
-  //         notification_title: title,
-  //         notification_message: message,
-  //         is_active: isActive,
-  //         minute,
-  //         hour,
-  //         day,
-  //         month
-  //     })
-  // })
-
-  // const data = await response.json()
-
 
     res.json({ result: true })
 
@@ -202,13 +211,14 @@ router.put('/register-cron-notification', async (req, res) => {
 
 // Route pour poster une cron notification (appelée par cron-job.org)
 
-router.put('/send-cron-notification/:cron', async (req, res) => {
+router.put('/send-cron-notification/:_id', async (req, res) => {
 
-try {const {cron_id} = req.params
+try {const {_id} = req.params
 
-const notification = await CronNotification.findOne({cron_id})
+const notification = await CronNotification.findOne({_id})
 
 console.log("CRON JOB DONE !")
+console.log("BDD CRON :", notification)
 
 }catch (err){
 res.json({result : false})
@@ -219,6 +229,9 @@ console.log(err)
 })
 
 // Route pour modifier les crons notifications
+
+
+// PENSER À VÉRIFIER SI LA CRON NOTIF EN BDD À UNE CRON-ID
 
 router.put('/modify-cron-notification', async (req, res) => {
   try {

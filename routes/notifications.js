@@ -215,12 +215,13 @@ console.log("JOB :",job)
 
 router.put('/send-cron-notification/:_id', async (req, res) => {
 
-try {const {_id} = req.params
+try {
+
+  const {_id} = req.params
 
 const notification = await CronNotification.findOne({_id})
 
-console.log("CRON JOB DONE !")
-console.log("BDD CRON :", notification)
+sendNotification(notification.notification_title, notification.notification_message)
 
 }catch (err){
 res.json({result : false})

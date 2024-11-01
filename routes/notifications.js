@@ -7,12 +7,6 @@ const { Expo } = require('expo-server-sdk')
 const User = require('../models/users')
 const CronNotification = require("../models/crons_notifications")
 
-const cron = require('node-cron');
-
-
-
-console.log("RUN AGAIN")
-
 
 
 // Fonction pour envoyer une notification
@@ -160,7 +154,7 @@ router.put('/register-cron-notification', async (req, res) => {
       month,
     })
 
-    const cronSaved = await cronNotif.save()
+    const cronSaved = await newCron.save()
 
     console.log("CRON SAVED :",cronSaved)
 
@@ -168,7 +162,7 @@ router.put('/register-cron-notification', async (req, res) => {
      const {_id} = cronSaved
      
      console.log("ID :", _id)
-     
+
      const job = {
       url : "https://backend-fit-me-up.vercel.app"
     }

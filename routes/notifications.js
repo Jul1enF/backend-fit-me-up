@@ -183,7 +183,7 @@ router.put('/register-cron-notification', async (req, res) => {
           'Authorization': `Bearer ${cronKey}`
          },
         body: JSON.stringify({
-         body,
+         job,
         })
     })
   

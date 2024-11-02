@@ -10,6 +10,7 @@ const secretToken = process.env.SECRET_TOKEN
 const { Expo } = require('expo-server-sdk')
 
 
+
 // Route signup pour s'inscrire
 
 router.put('/signup', async (req, res) => {
@@ -53,7 +54,10 @@ router.put('/signup', async (req, res) => {
 });
 
 
-// Router Signin pour se connecter
+
+
+
+// Route Signin pour se connecter
 
 router.post('/signin', async (req, res) => {
   try {
@@ -80,6 +84,24 @@ router.post('/signin', async (req, res) => {
 
    }
   } catch (err) {
+    console.log(err)
+    res.json({ result: false, err })
+  }
+})
+
+
+
+
+// Route pour obtenir tous les users
+
+router.get('/all-users', async (req, res) => {
+  try{
+const users = await User.find()
+
+res.json({ result : true, users })
+
+
+  }catch (err) {
     console.log(err)
     res.json({ result: false, err })
   }

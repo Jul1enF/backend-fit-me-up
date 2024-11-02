@@ -13,7 +13,7 @@ router.put('/changePushToken', async (req, res) => {
         const { token, push_token } = req.body
         const decryptedToken = jwt.verify(token, secretToken)
 
-        const userData = await User.findOne({ token : decryptedToken.token })
+        const userData = await User.findOne({ token: decryptedToken.token })
 
         if (!userData) {
             res.json({ result: false, error: "Token de connexion non valide !" })
@@ -31,13 +31,13 @@ router.put('/changePushToken', async (req, res) => {
 
 // Route pour ajouter un bookmark
 
-router.put('/addBookmark', async (req, res) =>{
+router.put('/addBookmark', async (req, res) => {
     try {
         const { _id, jwtToken } = req.body
 
         const decryptedToken = jwt.verify(jwtToken, secretToken)
 
-        const userData = await User.findOne({ token : decryptedToken.token })
+        const userData = await User.findOne({ token: decryptedToken.token })
 
         if (!userData) {
             res.json({ result: false, error: "Problème de connexion, merci de réessayer après vous être reconnecté." })
@@ -50,37 +50,96 @@ router.put('/addBookmark', async (req, res) =>{
             res.json({ result: true })
         }
 
-    } catch (err){
+    } catch (err) {
         console.log(err)
-        res.json({result : false, err, error : "Problème de connexion, merci de réessayer après vous être reconnecté."})
+        res.json({ result: false, err, error: "Problème de connexion, merci de réessayer après vous être reconnecté." })
     }
 })
 
 // Route pour supprimer un bookmark
 
-router.put('/removeBookmark', async (req, res) =>{
+router.put('/removeBookmark', async (req, res) => {
     try {
         const { _id, jwtToken } = req.body
 
         const decryptedToken = jwt.verify(jwtToken, secretToken)
 
-        const userData = await User.findOne({ token : decryptedToken.token })
+        const userData = await User.findOne({ token: decryptedToken.token })
 
         if (!userData) {
-            res.json({ result: false,  error: "Problème de connexion, merci de réessayer après vous être reconnecté." })
+            res.json({ result: false, error: "Problème de connexion, merci de réessayer après vous être reconnecté." })
         }
         else {
-            userData.bookmarks = userData.bookmarks.filter(e=> e.toString() !==_id)
+            userData.bookmarks = userData.bookmarks.filter(e => e.toString() !== _id)
 
             await userData.save()
 
             res.json({ result: true })
         }
 
-    } catch (err){
+    } catch (err) {
         console.log(err)
-        res.json({result : false, err,  error: "Problème de connexion, merci de réessayer après vous être reconnecté." })
+        res.json({ result: false, err, error: "Problème de connexion, merci de réessayer après vous être reconnecté." })
     }
 })
+
+
+
+// Route pour changer le statut allowed d'un user
+
+router.put('/toggle-allowed', async (req, res) => {
+
+    try {
+        const { jwtToken, _id } = req.body
+
+        const decryptedToken = jwt.verify(jwtToken, secretToken)
+        let user = await User.findOne({ token: decryptedToken.token })
+
+        // Vérification que l'utilisateur postant est bien admin
+        if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
+
+        const data = await User.findOne({_id})
+
+        data.is_allowed = !data.is_allowed
+
+        await data.save()
+
+        res.json({result : true})
+
+    } catch (err) {
+        console.log(err)
+        res.json({ result: false, err })
+    }
+})
+
+
+
+// Route pour changer le statut admin d'un user
+
+router.put('/toggle-admin', async (req, res) => {
+
+    try {
+        const { jwtToken, _id } = req.body
+
+        const decryptedToken = jwt.verify(jwtToken, secretToken)
+        let user = await User.findOne({ token: decryptedToken.token })
+
+        // Vérification que l'utilisateur postant est bien admin
+        if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
+
+        const data = await User.findOne({_id})
+
+        data.is_admin = !data.is_admin
+
+        await data.save()
+
+        res.json({result : true})
+
+    } catch (err) {
+        console.log(err)
+        res.json({ result: false, err })
+    }
+})
+
 
 module.exports = router

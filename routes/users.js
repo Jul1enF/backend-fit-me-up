@@ -90,8 +90,6 @@ router.post('/signin', async (req, res) => {
 })
 
 
-
-
 // Route pour obtenir tous les users
 
 router.get('/all-users', async (req, res) => {

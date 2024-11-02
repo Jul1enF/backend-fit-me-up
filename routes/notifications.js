@@ -127,7 +127,13 @@ router.put('/send-notification', async (req, res) => {
 
   try {
 
-    const { title, message } = req.body
+    const { title, message, jwtToken } = req.body
+
+    const decryptedToken = jwt.verify(jwtToken, secretToken)
+    let user = await User.findOne({ token: decryptedToken.token })
+  
+    // Vérification que l'utilisateur postant est bien admin
+    if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
 
     await sendNotification(title, message)
 

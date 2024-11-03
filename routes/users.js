@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const User = require('../models/users')
+const AppCode = require("../models/app_codes")
 
 const mongoose = require('mongoose')
 const connectionString = process.env.CONNECTION_STRING
@@ -30,8 +31,19 @@ const { Expo } = require('expo-server-sdk')
 
 router.put('/signup', async (req, res) => {
   try {
-    const { firstname, name, email, password } = req.body
+    const { firstname, name, email, password, appCode, coach } = req.body
 
+
+    // Vérification que le code l'app est valide
+    const checkCode = await AppCode.findOne({code : appCode})
+    console.log("CHECK CODE :", checkCode)
+
+    if (!checkCode){
+      return res.json({result : false, error : "Code de l'application incorrect !"})
+    }
+
+
+    // Vérification que l'utilisateur n'est pas déjà enregistré
     const data = await User.findOne({ email })
     if (data) {
       res.json({
@@ -56,10 +68,11 @@ router.put('/signup', async (req, res) => {
         password: hash,
         inscription_date: new Date(),
         token,
+        coach,
       })
       const data = await newUser.save()
 
-      res.json({ result: true, jwtToken, firstname, is_admin: data.is_admin })
+      res.json({ result: true, jwtToken, firstname, name, email, is_admin: data.is_admin, is_allowed : data.is_allowed })
     }
   }
   catch (err) {
@@ -97,7 +110,7 @@ router.post('/signin', async (req, res) => {
 
    await userData.save()
 
-   res.json({ result : true, firstname : userData.firstname, jwtToken : newJwtToken, is_admin : userData.is_admin, push_token : userData.push_token, bookmarks : userData.bookmarks})
+   res.json({ result : true, firstname : userData.firstname, name : userData.name, email : userData.email, jwtToken : newJwtToken, is_admin : userData.is_admin, is_allowed : userData.is_allowed, push_token : userData.push_token, bookmarks : userData.bookmarks})
 
    }
   } catch (err) {
@@ -121,5 +134,25 @@ res.json({ result : true, users })
     res.json({ result: false, err })
   }
 })
+
+
+
+
+
+// Route pour créer un code l'app (VIA THUNDERCLIENT)
+
+router.put('/create-code', async (req, res)=>{
+  const {name, code} = req.body
+
+  const newAppCode = new AppCode({
+    name,
+    code,
+  })
+
+  await newAppCode.save()
+res.json({result : true})
+
+})
+
 
 module.exports = router;

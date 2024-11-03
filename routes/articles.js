@@ -253,8 +253,18 @@ router.post('/save-article/:articleData', async (req, res) => {
 
 // Route pour obtenir tous les articles
 
-router.get('/getArticles', async (req, res) => {
+router.get('/getArticles/:jwtToken', async (req, res) => {
     try {
+
+        const { jwtToken } = req.params
+
+        const decryptedToken = jwt.verify(jwtToken, secretToken)
+        let user = await User.findOne({ token: decryptedToken.token })
+
+        // Vérification que l'utilisateur n'est pas bloqué
+        if (!user || !user.is_allowed) { return res.json({ result: false, error: 'Utilisateur bloqué.' }) }
+
+
         const articles = await Article.find()
 
         if (articles){
@@ -282,7 +292,7 @@ router.delete('/delete-article/:jwtToken/:_id', async (req, res)=>{
         let user = await User.findOne({ token: decryptedToken.token })
 
         // Vérification que l'utilisateur postant est bien admin
-        if (!user) { return res.json({ result: false, error: 'Utilisateur non trouvé, essayez en vous reconnectant.' }) }
+        if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé, essayez en vous reconnectant.' }) }
 
         const article = await Article.findOne({_id})
         const img_public_id = article.img_public_id

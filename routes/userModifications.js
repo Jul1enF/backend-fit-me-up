@@ -6,12 +6,16 @@ const secretToken = process.env.SECRET_TOKEN
 const User = require('../models/users')
 
 
+
+
 // Route pour modifier le push token d'un utilisateur
 
 router.put('/changePushToken', async (req, res) => {
     try {
-        const { token, push_token } = req.body
-        const decryptedToken = jwt.verify(token, secretToken)
+        const { jwtToken, push_token } = req.body
+        console.log("JSON WEB TOKEN :",jwtToken)
+        
+        const decryptedToken = jwt.verify(jwtToken, secretToken)
 
         const userData = await User.findOne({ token: decryptedToken.token })
 

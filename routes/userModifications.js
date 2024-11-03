@@ -3,6 +3,7 @@ var router = express.Router()
 
 const jwt = require('jsonwebtoken')
 const secretToken = process.env.SECRET_TOKEN
+const bcrypt = require('bcrypt')
 const User = require('../models/users')
 
 
@@ -13,8 +14,8 @@ const User = require('../models/users')
 router.put('/changePushToken', async (req, res) => {
     try {
         const { jwtToken, push_token } = req.body
-        console.log("JSON WEB TOKEN :",jwtToken)
-        
+        console.log("JSON WEB TOKEN :", jwtToken)
+
         const decryptedToken = jwt.verify(jwtToken, secretToken)
 
         const userData = await User.findOne({ token: decryptedToken.token })
@@ -31,6 +32,7 @@ router.put('/changePushToken', async (req, res) => {
         }
     } catch (err) { res.json({ err }) }
 })
+
 
 
 // Route pour ajouter un bookmark
@@ -59,6 +61,8 @@ router.put('/addBookmark', async (req, res) => {
         res.json({ result: false, err, error: "Problème de connexion, merci de réessayer après vous être reconnecté." })
     }
 })
+
+
 
 // Route pour supprimer un bookmark
 
@@ -102,13 +106,13 @@ router.put('/toggle-allowed', async (req, res) => {
         // Vérification que l'utilisateur postant est bien admin
         if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
 
-        const data = await User.findOne({_id})
+        const data = await User.findOne({ _id })
 
         data.is_allowed = !data.is_allowed
 
         await data.save()
 
-        res.json({result : true})
+        res.json({ result: true })
 
     } catch (err) {
         console.log(err)
@@ -131,18 +135,57 @@ router.put('/toggle-admin', async (req, res) => {
         // Vérification que l'utilisateur postant est bien admin
         if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
 
-        const data = await User.findOne({_id})
+        const data = await User.findOne({ _id })
 
         data.is_admin = !data.is_admin
 
         await data.save()
 
-        res.json({result : true})
+        res.json({ result: true })
 
     } catch (err) {
         console.log(err)
         res.json({ result: false, err })
     }
+})
+
+
+// Route pour modifier les informations d'un utilisateur
+
+router.put('/modify-user', async (req, res) => {
+    try {
+
+        const { name, firstname, email, oldPassword, password, jwtToken } = req.body
+
+        const decryptedToken = jwt.verify(jwtToken, secretToken)
+        let user = await User.findOne({ token: decryptedToken.token })
+
+        // Vérification que l'utilisateur postant est bien admin
+        if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
+
+        user.name = name
+        user.firstname = firstname
+        user.email = email
+
+        if (oldPassword && !bcrypt.compareSync(oldPassword, user.password)) {
+            res.json({ result: false, error: "Ancien mot de passe incorrect !" })
+            return
+        }
+
+        if (password) {
+            const hash = bcrypt.hashSync(password, 10)
+            user.password = hash
+        }
+
+        await user.save()
+
+        res.json({ result: true })
+
+    }catch (err) {
+        console.log(err)
+        res.json({ result: false, err })
+    }
+
 })
 
 

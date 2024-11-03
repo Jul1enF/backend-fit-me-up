@@ -262,19 +262,23 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
         let user = await User.findOne({ token: decryptedToken.token })
 
         // Vérification que l'utilisateur n'est pas bloqué
-        if (!user || !user.is_allowed) { return res.json({ result: false, error: 'Utilisateur bloqué.' }) }
+        if (user.is_allowed === false) { return res.json({ result: false, error: 'Utilisateur bloqué.' }) }
+        else if (user.is_allowed === true){
 
 
-        const articles = await Article.find()
+            const articles = await Article.find()
 
-        if (articles){
-            res.json({ result: true, articles})
-            
+            if (articles){
+                res.json({ result: true, articles})
+                
+            }
+            else {
+                res.json({ result: false, error: "Pas d'articles" })
+            }
+    
+
+
         }
-        else {
-            res.json({ result: false, error: "Pas d'articles" })
-        }
-
     } catch (err) {
         console.log("err :", err)
         res.json({ err })

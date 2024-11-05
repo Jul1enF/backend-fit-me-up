@@ -91,7 +91,7 @@ router.post('/signin', async (req, res) => {
   try {
     const { email, password } = req.body
 
-    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+    // await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 
     const userData = await User.findOne({ email })
 

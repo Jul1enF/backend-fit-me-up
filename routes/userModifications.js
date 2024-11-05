@@ -14,7 +14,6 @@ const User = require('../models/users')
 router.put('/changePushToken', async (req, res) => {
     try {
         const { jwtToken, push_token } = req.body
-        console.log("JSON WEB TOKEN :", jwtToken)
 
         const decryptedToken = jwt.verify(jwtToken, secretToken)
 

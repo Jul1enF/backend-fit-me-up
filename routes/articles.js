@@ -338,8 +338,8 @@ router.delete('/delete-article/:jwtToken/:_id', async (req, res)=>{
             // Supression de l'article dans les favoris des utilisateurs
             await User.updateMany({bookmarks : _id}, {$pull : { bookmarks : _id }})
 
-            // Supression de l'image du cloud
-            await cloudinary.uploader.destroy(img_public_id)
+            // Supression de l'image du cloud s'il y en avait une
+            img_public_id && await cloudinary.uploader.destroy(img_public_id)
 
             res.json({result : true})
         }

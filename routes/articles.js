@@ -140,6 +140,13 @@ router.post('/save-article/:articleData', async (req, res) => {
 
                 // L'enregistrement dans le cloud a fonctionné, enregistrement de l'article en BDD
                 else {
+                    
+                    // Si c'est un article pour la page d'accueil, suppression du précédent
+                    if (category == "home"){
+                        await Article.deleteOne({category : "home"})
+                    }
+
+
                     const newImgLink = resultCloudinary ? resultCloudinary.secure_url : ""
                     const newImgPublicId =resultCloudinary ? resultCloudinary.public_id : ""
 

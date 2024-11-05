@@ -47,7 +47,7 @@ router.post('/save-article/:articleData', async (req, res) => {
 
 
             // Si nouvelle photo, enregistrement dans le cloud de celle ci et supression de l'ancienne
-            if (localPic) {
+            if (localPic && img_link) {
                 const photoPath = `${tmpUrl}/${uniqid()}.jpg`
                 const resultMove = await req.files.articlePicture.mv(photoPath);
 
@@ -61,13 +61,26 @@ router.post('/save-article/:articleData', async (req, res) => {
                         definitivePictureUrl = resultCloudinary.secure_url
                         definitivePictureId = resultCloudinary.public_id
 
-                        // Supression de l'ancienne image
-                        await cloudinary.uploader.destroy(img_public_id)
+                        // Supression de l'ancienne image (si il y en avait une)
+                        img_public_id && await cloudinary.uploader.destroy(img_public_id)
                     }
 
                     else { res.json({ result: false, error: "Problème d'enregistrement de l'image dans le cloud" }) }
 
                 } else { res.json({ result: false, error: "Problème lors de l'upload de l'image" }) }
+            }
+
+            // Si plus d'image dans l'article et présence antérieure d'une photo dans celui ci, supression de l'image 
+
+            if (!img_link && img_public_id){
+                await cloudinary.uploader.destroy(img_public_id)
+            }
+
+
+            // Si on garde la même image, on garde la même public id d'image
+
+            if (!definitivePictureId && img_link){
+                definitivePictureId = img_public_id
             }
 
             // Modification et enregistrement de l'article
@@ -81,7 +94,7 @@ router.post('/save-article/:articleData', async (req, res) => {
 
             article.img_link = definitivePictureUrl ? definitivePictureUrl : img_link
 
-            article.img_public_id = definitivePictureId ? definitivePictureId : img_public_id
+            article.img_public_id = definitivePictureId
 
             article.img_margin_top = img_margin_top
             article.img_margin_left = img_margin_left
@@ -103,19 +116,26 @@ router.post('/save-article/:articleData', async (req, res) => {
                 res.json({ result: false, error: "Problème lors de l'upload de l'image" })
             }
             else {
-                const resultCloudinary = await cloudinary.uploader.upload(photoPath,
+
+                // Si présence d'une image, enregistrement de celle ci dans le cloud
+
+                let resultCloudinary
+
+                if (img_link){
+                    resultCloudinary = await cloudinary.uploader.upload(photoPath,
                     { folder: "fit-me-up", resource_type: 'image' })
 
                 fs.unlinkSync(photoPath)
+                }
 
-                if (!resultCloudinary.secure_url) {
+                if (resultCloudinary && !resultCloudinary.secure_url) {
                     res.json({ result: false, error: "Problème d'enregistrement de l'image dans le cloud" })
                 }
 
                 // L'enregistrement dans le cloud a fonctionné, enregistrement de l'article en BDD
                 else {
-                    const newImgLink = resultCloudinary.secure_url
-                    const newImgPublicId = resultCloudinary.public_id
+                    const newImgLink = resultCloudinary ? resultCloudinary.secure_url : ""
+                    const newImgPublicId =resultCloudinary ? resultCloudinary.public_id : ""
 
                     const newArticle = new Article({
                         title,

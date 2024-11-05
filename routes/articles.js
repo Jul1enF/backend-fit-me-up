@@ -107,11 +107,17 @@ router.post('/save-article/:articleData', async (req, res) => {
 
         }
         else {
-            // Si l'article n'existe pas en BDD, enregistrement de celui ci, en commençant par uploader son image dans le cloud
+            // Si l'article n'existe pas en BDD, enregistrement de celui ci, en commençant par uploader son image dans le cloud s'il y'en a une
 
-            const photoPath = `${tmpUrl}/${uniqid()}.jpg`
-            const resultMove = await req.files.articlePicture.mv(photoPath);
+            let photoPath
+            let resultMove
 
+            if (img_link){
+                photoPath = `${tmpUrl}/${uniqid()}.jpg`
+                resultMove = await req.files.articlePicture.mv(photoPath);
+            }
+
+            // resultMove est undefined si l'image a bien été transférée
             if (resultMove) {
                 res.json({ result: false, error: "Problème lors de l'upload de l'image" })
             }

@@ -264,7 +264,7 @@ router.post('/save-article/:articleData', async (req, res) => {
                         }
                     }
 
-                    res.json({ result: true, url: resultCloudinary.secure_url })
+                    res.json({ result: true })
                 }
             }
 

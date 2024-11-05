@@ -140,7 +140,7 @@ router.post('/save-article/:articleData', async (req, res) => {
 
                 // L'enregistrement dans le cloud a fonctionné, enregistrement de l'article en BDD
                 else {
-                    
+
                     // Si c'est un article pour la page d'accueil, suppression du précédent
                     if (category == "home"){
                         await Article.deleteOne({category : "home"})
@@ -168,7 +168,14 @@ router.post('/save-article/:articleData', async (req, res) => {
                     const articleSaved = await newArticle.save()
 
 
-                    // Envoi d'une notification pour prévenir les utilisateurs du post
+                    // Si l'article est pour le contenu de la page d'accueil, fin de la fonction, pas de notif envoyée
+
+                    if (category == "home"){
+                        return res.json({result : true})
+                    }
+
+
+                    // Sinon envoi d'une notification pour prévenir les utilisateurs du post
 
                     let frenchCategory
                     if(category === "recipes"){frenchCategory = "recette"}

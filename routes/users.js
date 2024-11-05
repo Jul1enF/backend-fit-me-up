@@ -33,6 +33,7 @@ router.put('/signup', async (req, res) => {
   try {
     const { firstname, name, email, password, appCode, coach } = req.body
 
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 
     // Vérification que le code l'app est valide
     const checkCode = await AppCode.findOne({code : appCode})
@@ -91,7 +92,7 @@ router.post('/signin', async (req, res) => {
   try {
     const { email, password } = req.body
 
-    // await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 
     const userData = await User.findOne({ email })
 

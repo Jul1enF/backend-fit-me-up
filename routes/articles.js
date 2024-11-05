@@ -103,7 +103,7 @@ router.post('/save-article/:articleData', async (req, res) => {
             const articleModified = await article.save()
             console.log(articleModified)
 
-            res.json({ result: true })
+            res.json({ result: true, articleModified })
 
         }
         else {
@@ -171,7 +171,7 @@ router.post('/save-article/:articleData', async (req, res) => {
                     // Si l'article est pour le contenu de la page d'accueil, fin de la fonction, pas de notif envoyée
 
                     if (category == "home"){
-                        return res.json({result : true})
+                        return res.json({result : true, articleSaved})
                     }
 
 
@@ -278,7 +278,7 @@ router.post('/save-article/:articleData', async (req, res) => {
                         }
                     }
 
-                    res.json({ result: true })
+                    res.json({ result: true, articleSaved })
                 }
             }
 

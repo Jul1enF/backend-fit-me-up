@@ -116,16 +116,14 @@ router.get('/all-users', async (req, res) => {
   try {
     await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 
-    const users = await User.find()
+    const usersData = await User.find()
 
-    // usersInfos = users.map(e=>{
-    //   e.password = ""
-    //   e.push_token = ""
-    //   e.token = ""
-    //   return e
-    // })
-
-    // res.json({ result: true, usersInfos })
+    const users = usersData.map(e=>{
+      e.password = ""
+      e.push_token = ""
+      e.token = ""
+      return e
+    })
 
     res.json({result : true, users})
 

@@ -118,14 +118,14 @@ router.get('/all-users', async (req, res) => {
 
     const users = await User.find()
 
-    users = users.map(e=>{
+    usersInfos = users.map(e=>{
       e.password = ""
       e.push_token = ""
       e.token = ""
       return e
     })
 
-    res.json({ result: true, users })
+    res.json({ result: true, usersInfos })
 
 
   } catch (err) {

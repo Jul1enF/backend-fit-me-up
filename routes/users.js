@@ -6,17 +6,6 @@ const AppCode = require("../models/app_codes")
 const mongoose = require('mongoose')
 const connectionString = process.env.CONNECTION_STRING
 
-// const connect = async ()=> {
-//     try {
-//         await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
-//          console.log('Database connected')
-//      }catch (error){
-//          console.log(error)
-//      }
-
-// }
-
-// connect()
 
 const bcrypt = require('bcrypt')
 const uid2 = require('uid2')
@@ -125,6 +114,7 @@ router.post('/signin', async (req, res) => {
 
 router.get('/all-users', async (req, res) => {
   try{
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 const users = await User.find()
 
 res.json({ result : true, users })
@@ -137,23 +127,6 @@ res.json({ result : true, users })
 })
 
 
-
-
-
-// Route pour créer un code l'app (VIA THUNDERCLIENT)
-
-router.put('/create-code', async (req, res)=>{
-  const {name, code} = req.body
-
-  const newAppCode = new AppCode({
-    name,
-    code,
-  })
-
-  await newAppCode.save()
-res.json({result : true})
-
-})
 
 
 module.exports = router;

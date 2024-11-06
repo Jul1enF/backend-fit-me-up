@@ -11,7 +11,8 @@ const secretToken = process.env.SECRET_TOKEN
 
 const cronKey = process.env.CRON_KEY
 
-
+const mongoose = require('mongoose')
+const connectionString = process.env.CONNECTION_STRING
 
 
 
@@ -126,6 +127,7 @@ const sendNotification = async (title, message) => {
 router.put('/send-notification', async (req, res) => {
 
   try {
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 
     const { title, message, jwtToken } = req.body
 
@@ -152,6 +154,9 @@ router.put('/send-notification', async (req, res) => {
 
 router.put('/register-cron-notification', async (req, res) => {
   try {
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+
     const { notification_title, notification_message, is_active, minute, hour, day, month, jwtToken } = req.body
 
 
@@ -232,6 +237,7 @@ router.put('/register-cron-notification', async (req, res) => {
 router.put('/send-cron-notification/:_id', async (req, res) => {
 
   try {
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 
     const { _id } = req.params
 
@@ -257,6 +263,9 @@ router.put('/send-cron-notification/:_id', async (req, res) => {
 
 router.put('/modify-cron-notification', async (req, res) => {
   try {
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+
     const { notification_title, notification_message, is_active, minute, hour, day, month, _id, cron_id, jwtToken } = req.body
 
 
@@ -330,6 +339,9 @@ router.put('/modify-cron-notification', async (req, res) => {
 
 router.delete('/delete-cron-notification/:cron_id/:jwtToken', async (req, res) => {
 
+  await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+
   let { cron_id, jwtToken } = req.params
 
   const decryptedToken = jwt.verify(jwtToken, secretToken)
@@ -375,6 +387,7 @@ router.delete('/delete-cron-notification/:cron_id/:jwtToken', async (req, res) =
 
 router.get('/get-crons-notifications', async (req, res) => {
   try {
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 
     const data = await CronNotification.find()
 

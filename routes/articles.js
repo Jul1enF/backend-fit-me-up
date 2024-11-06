@@ -15,11 +15,18 @@ const fs = require('fs');
 const { Expo } = require('expo-server-sdk')
 
 
+const mongoose = require('mongoose')
+const connectionString = process.env.CONNECTION_STRING
+
+
 
 // Route pour poster ou modifier un article
 
 router.post('/save-article/:articleData', async (req, res) => {
     try {
+
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
 
         const decryptedData = jwt.verify(req.params.articleData, jwtKey)
 
@@ -291,10 +298,13 @@ router.post('/save-article/:articleData', async (req, res) => {
 })
 
 
+
 // Route pour obtenir tous les articles
 
 router.get('/getArticles/:jwtToken', async (req, res) => {
     try {
+
+    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 
         const { jwtToken } = req.params
 
@@ -330,6 +340,10 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
 
 router.delete('/delete-article/:jwtToken/:_id', async (req, res)=>{
     try {
+
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+
         const { jwtToken, _id } = req.params
 
         const decryptedToken = jwt.verify(jwtToken, secretToken)

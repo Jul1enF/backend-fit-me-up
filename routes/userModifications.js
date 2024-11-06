@@ -6,13 +6,16 @@ const secretToken = process.env.SECRET_TOKEN
 const bcrypt = require('bcrypt')
 const User = require('../models/users')
 
-
+const mongoose = require('mongoose')
+const connectionString = process.env.CONNECTION_STRING
 
 
 // Route pour modifier le push token d'un utilisateur
 
 router.put('/changePushToken', async (req, res) => {
     try {
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
         const { jwtToken, push_token } = req.body
 
         const decryptedToken = jwt.verify(jwtToken, secretToken)
@@ -38,6 +41,9 @@ router.put('/changePushToken', async (req, res) => {
 
 router.put('/addBookmark', async (req, res) => {
     try {
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+
         const { _id, jwtToken } = req.body
 
         const decryptedToken = jwt.verify(jwtToken, secretToken)
@@ -67,6 +73,9 @@ router.put('/addBookmark', async (req, res) => {
 
 router.put('/removeBookmark', async (req, res) => {
     try {
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+
         const { _id, jwtToken } = req.body
 
         const decryptedToken = jwt.verify(jwtToken, secretToken)
@@ -97,6 +106,9 @@ router.put('/removeBookmark', async (req, res) => {
 router.put('/toggle-allowed', async (req, res) => {
 
     try {
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+
         const { jwtToken, _id } = req.body
 
         const decryptedToken = jwt.verify(jwtToken, secretToken)
@@ -126,6 +138,9 @@ router.put('/toggle-allowed', async (req, res) => {
 router.put('/toggle-admin', async (req, res) => {
 
     try {
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+
         const { jwtToken, _id } = req.body
 
         const decryptedToken = jwt.verify(jwtToken, secretToken)
@@ -153,6 +168,8 @@ router.put('/toggle-admin', async (req, res) => {
 
 router.put('/modify-user', async (req, res) => {
     try {
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
 
         const { name, firstname, email, oldPassword, password, jwtToken } = req.body
 

@@ -205,4 +205,42 @@ router.put('/modify-user', async (req, res) => {
 })
 
 
+
+
+// Route pour supprimer un utilisateur
+
+
+router.delete('/delete-user/:jwtToken', async (req, res)=>{
+    try {
+
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+
+        const { jwtToken } = req.params
+
+        const decryptedToken = jwt.verify(jwtToken, secretToken)
+        let user = await User.findOne({ token: decryptedToken.token })
+
+        // Vérification que l'utilisateur postant est bien admin
+        if (!user) { return res.json({ result: false, error: 'Utilisateur non trouvé, essayez en vous reconnectant.' }) }
+
+        const suppress = await User.deleteOne({token: decryptedToken.token})
+
+        if (suppress.deletedCount !== 1){
+            res.json({ result : false, error : "Problème de connexion à la base de donnée, merci de réessayer ultérieurement ou de contacter l'Éditeur de l'application."})
+
+            return
+        }
+        else {
+            res.json({result : true})
+        }
+
+    }catch (err){
+        console.log(err)
+        res.json({result : false, err})
+    }
+})
+
+
+
 module.exports = router

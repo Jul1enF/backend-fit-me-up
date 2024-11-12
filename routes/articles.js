@@ -25,7 +25,7 @@ const connectionString = process.env.CONNECTION_STRING
 router.post('/save-article/:articleData', async (req, res) => {
     try {
 
-    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
 
 
         const decryptedData = jwt.verify(req.params.articleData, jwtKey)
@@ -79,14 +79,14 @@ router.post('/save-article/:articleData', async (req, res) => {
 
             // Si plus d'image dans l'article et présence antérieure d'une photo dans celui ci, supression de l'image 
 
-            if (!img_link && img_public_id){
+            if (!img_link && img_public_id) {
                 await cloudinary.uploader.destroy(img_public_id)
             }
 
 
             // Si on garde la même image, on garde la même public id d'image
 
-            if (!definitivePictureId && img_link){
+            if (!definitivePictureId && img_link) {
                 definitivePictureId = img_public_id
             }
 
@@ -119,7 +119,7 @@ router.post('/save-article/:articleData', async (req, res) => {
             let photoPath
             let resultMove
 
-            if (img_link){
+            if (img_link) {
                 photoPath = `${tmpUrl}/${uniqid()}.jpg`
                 resultMove = await req.files.articlePicture.mv(photoPath);
             }
@@ -134,11 +134,11 @@ router.post('/save-article/:articleData', async (req, res) => {
 
                 let resultCloudinary
 
-                if (img_link){
+                if (img_link) {
                     resultCloudinary = await cloudinary.uploader.upload(photoPath,
-                    { folder: "fit-me-up", resource_type: 'image' })
+                        { folder: "fit-me-up", resource_type: 'image' })
 
-                fs.unlinkSync(photoPath)
+                    fs.unlinkSync(photoPath)
                 }
 
                 if (resultCloudinary && !resultCloudinary.secure_url) {
@@ -149,19 +149,19 @@ router.post('/save-article/:articleData', async (req, res) => {
                 else {
 
                     // Si c'est un article pour la page d'accueil, suppression du précédent
-                    if (category == "home"){
-                        await Article.deleteOne({category : "home"})
+                    if (category == "home") {
+                        await Article.deleteOne({ category: "home" })
                     }
 
 
                     const newImgLink = resultCloudinary ? resultCloudinary.secure_url : ""
-                    const newImgPublicId =resultCloudinary ? resultCloudinary.public_id : ""
+                    const newImgPublicId = resultCloudinary ? resultCloudinary.public_id : ""
 
                     const newArticle = new Article({
                         title,
                         sub_title,
                         img_link: newImgLink,
-                        img_public_id : newImgPublicId,
+                        img_public_id: newImgPublicId,
                         img_margin_top,
                         img_margin_left,
                         img_zoom,
@@ -177,17 +177,17 @@ router.post('/save-article/:articleData', async (req, res) => {
 
                     // Si l'article est pour le contenu de la page d'accueil, fin de la fonction, pas de notif envoyée
 
-                    if (category == "home"){
-                        return res.json({result : true, articleSaved})
+                    if (category == "home") {
+                        return res.json({ result: true, articleSaved })
                     }
 
 
                     // Sinon envoi d'une notification pour prévenir les utilisateurs du post
 
                     let frenchCategory
-                    if(category === "recipes"){frenchCategory = "recette"}
-                    else if (category === "exercices"){ frenchCategory="exercice"}
-                    else {frenchCategory = "évènement"}
+                    if (category === "recipes") { frenchCategory = "recette" }
+                    else if (category === "exercices") { frenchCategory = "exercice" }
+                    else { frenchCategory = "évènement" }
 
                     const postMessage = frenchCategory === "recette" ? `Une nouvelle ${frenchCategory} a été postée !` : `Un nouvel ${frenchCategory} a été posté !`
 
@@ -304,7 +304,39 @@ router.post('/save-article/:articleData', async (req, res) => {
 router.get('/getArticles/:jwtToken', async (req, res) => {
     try {
 
-    await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+        await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
+
+        const articles = await Article.find()
+
+        if (articles) {
+            const { jwtToken } = req.params
+
+            // Si pas de token de connexion, renvoi des articles mais avec un result false et une erreur
+            if (jwtToken === "noToken"){
+                return res.json({ result: false, error: 'noToken', articles })
+            }
+
+
+            // Vérification que l'utilisateur n'est pas bloqué
+            const decryptedToken = jwt.verify(jwtToken, secretToken)
+            let user = await User.findOne({ token: decryptedToken.token })
+
+            // Si l'utilisateur est bloqué, renvoi des articles mais avec un result false et une erreur
+
+            if (user.is_allowed === false) { return res.json({ result: false, error: 'Utilisateur bloqué.', articles }) }
+
+            // Sinon renvoi sans errreur de tous les articles
+            res.json({ result: true, articles })
+
+        }
+        else {
+            res.json({ result: false, error: "Pas d'articles" })
+        }
+
+
+
+
+
 
         const { jwtToken } = req.params
 
@@ -313,19 +345,19 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
 
         // Vérification que l'utilisateur n'est pas bloqué
         if (user.is_allowed === false) { return res.json({ result: false, error: 'Utilisateur bloqué.' }) }
-        else if (user.is_allowed === true){
+        else if (user.is_allowed === true) {
 
 
             const articles = await Article.find()
 
-            if (articles){
-                res.json({ result: true, articles})
-                
+            if (articles) {
+                res.json({ result: true, articles })
+
             }
             else {
                 res.json({ result: false, error: "Pas d'articles" })
             }
-    
+
 
 
         }
@@ -338,7 +370,7 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
 
 // Router pour supprimer un article de la bdd et son image du cloud
 
-router.delete('/delete-article/:jwtToken/:_id', async (req, res)=>{
+router.delete('/delete-article/:jwtToken/:_id', async (req, res) => {
     try {
 
         await mongoose.connect(connectionString, { connectTimeoutMS: 6000 })
@@ -352,29 +384,29 @@ router.delete('/delete-article/:jwtToken/:_id', async (req, res)=>{
         // Vérification que l'utilisateur postant est bien admin
         if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé, essayez en vous reconnectant.' }) }
 
-        const article = await Article.findOne({_id})
+        const article = await Article.findOne({ _id })
         const img_public_id = article.img_public_id
 
-        const deleteResult = await Article.deleteOne({_id})
+        const deleteResult = await Article.deleteOne({ _id })
 
-        if (deleteResult.deletedCount !== 1){
-            res.json({ result : false, error : "Problème de connexion à la base de donnée, merci de contacter le webmaster."})
+        if (deleteResult.deletedCount !== 1) {
+            res.json({ result: false, error: "Problème de connexion à la base de donnée, merci de contacter le webmaster." })
 
             return
         }
         else {
             // Supression de l'article dans les favoris des utilisateurs
-            await User.updateMany({bookmarks : _id}, {$pull : { bookmarks : _id }})
+            await User.updateMany({ bookmarks: _id }, { $pull: { bookmarks: _id } })
 
             // Supression de l'image du cloud s'il y en avait une
             img_public_id && await cloudinary.uploader.destroy(img_public_id)
 
-            res.json({result : true})
+            res.json({ result: true })
         }
 
-    }catch (err){
+    } catch (err) {
         console.log(err)
-        res.json({result : false, err})
+        res.json({ result: false, err })
     }
 })
 

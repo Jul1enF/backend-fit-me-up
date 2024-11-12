@@ -351,7 +351,7 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
                 const decryptedToken = jwt.verify(jwtToken, secretToken)
                 let user = await User.findOne({ token: decryptedToken.token })
 
-                // Si l'utilisateur est bloqué, renvoi des articles mais avec une erreur
+                // Si l'utilisateur est bloqué, renvoi des échantillons d'articles avec une erreur
 
                 if (user.is_allowed === false) {
                     return res.json({ result: true, error: 'Utilisateur bloqué.', articles : articlesSample })

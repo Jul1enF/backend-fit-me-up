@@ -49,6 +49,16 @@ router.post('/save-article/:articleData', async (req, res) => {
         if (_id !== "testArticleId") {
             let article = await Article.findOne({ _id })
 
+
+            // Blocage du changement s'il s'agit de passer un article de home dans une catégorie ou vice versa
+            if (category == "home" && article.category !== "home"){
+                return res.json({ result: false, error: "Erreur : Pour changer l'article de l'accueil, merci de modifier celui ci ou d'en écrire un nouveau" })
+            }
+            if (category !== "home" && article.category == "home"){
+                return res.json({ result: false, error: "Erreur : Impossible de changer la catégorie de l'article de la page d'accueil" })
+            }
+
+            
             let definitivePictureUrl
             let definitivePictureId
 

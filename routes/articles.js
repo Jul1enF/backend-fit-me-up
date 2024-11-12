@@ -311,9 +311,9 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
         if (articles) {
             const { jwtToken } = req.params
 
-            // Si pas de token de connexion, renvoi des articles mais avec un result false et une erreur
+            // Si pas de token de connexion, renvoi des articles mais avec une erreur
             if (jwtToken === "noToken"){
-                return res.json({ result: false, error: 'noToken', articles })
+                return res.json({ result: true, error: 'noToken', articles })
             }
 
 
@@ -321,9 +321,9 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
             const decryptedToken = jwt.verify(jwtToken, secretToken)
             let user = await User.findOne({ token: decryptedToken.token })
 
-            // Si l'utilisateur est bloqué, renvoi des articles mais avec un result false et une erreur
+            // Si l'utilisateur est bloqué, renvoi des articles mais avec une erreur
 
-            if (user.is_allowed === false) { return res.json({ result: false, error: 'Utilisateur bloqué.', articles }) }
+            if (user.is_allowed === false) { return res.json({ result: true, error: 'Utilisateur bloqué.', articles }) }
 
             // Sinon renvoi sans errreur de tous les articles
             res.json({ result: true, articles })

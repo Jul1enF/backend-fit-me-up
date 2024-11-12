@@ -344,6 +344,8 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
 })
 
 
+
+
 // Router pour supprimer un article de la bdd et son image du cloud
 
 router.delete('/delete-article/:jwtToken/:_id', async (req, res) => {

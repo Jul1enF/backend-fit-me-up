@@ -187,9 +187,10 @@ router.post('/save-article/:articleData', async (req, res) => {
                     let frenchCategory
                     if (category === "recipes") { frenchCategory = "recette" }
                     else if (category === "exercices") { frenchCategory = "exercice" }
-                    else { frenchCategory = "évènement" }
+                    else { frenchCategory = "news" }
 
-                    const postMessage = frenchCategory === "recette" ? `Une nouvelle ${frenchCategory} a été postée !` : `Un nouvel ${frenchCategory} a été posté !`
+                    const postMessage = frenchCategory === "exercice" ? `Un nouvel ${frenchCategory} a été posté !` :  `Une nouvelle ${frenchCategory} a été postée !`
+                    
 
 
                     let expo = new Expo({
@@ -334,7 +335,7 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
             }
 
             for (let article of articles){
-                if (article.category === "events"){
+                if (article.category === "news"){
                     articlesSample.push(article)
                     break
                 }

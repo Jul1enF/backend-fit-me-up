@@ -309,11 +309,42 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
         const articles = await Article.find()
 
         if (articles) {
+            // Création d'un échantillon d'articles pour les renvois des utilisateurs sans token ou bloqués
+            let articlesSample = []
+
+            for (let article of articles){
+                if (article.category === "home"){
+                    articlesSample.push(article)
+                    break
+                }
+            }
+
+            for (let article of articles){
+                if (article.category === "recipes"){
+                    articlesSample.push(article)
+                    break
+                }
+            }
+
+            for (let article of articles){
+                if (article.category === "exercices"){
+                    articlesSample.push(article)
+                    break
+                }
+            }
+
+            for (let article of articles){
+                if (article.category === "events"){
+                    articlesSample.push(article)
+                    break
+                }
+            }
+
             const { jwtToken } = req.params
 
-            // Si pas de token de connexion, renvoi des articles mais avec une erreur
+            // Si pas de token de connexion, renvoi des échantillons d'articles avec une erreur
             if (jwtToken === "noToken") {
-                return res.json({ result: true, error: 'noToken', articles })
+                return res.json({ result: true, error: 'noToken', articles : articlesSample })
             }
             else {
                 // Vérification que l'utilisateur n'est pas bloqué
@@ -323,7 +354,7 @@ router.get('/getArticles/:jwtToken', async (req, res) => {
                 // Si l'utilisateur est bloqué, renvoi des articles mais avec une erreur
 
                 if (user.is_allowed === false) {
-                    return res.json({ result: true, error: 'Utilisateur bloqué.', articles })
+                    return res.json({ result: true, error: 'Utilisateur bloqué.', articles : articlesSample })
                 }
 
                 // Sinon renvoi sans errreur de tous les articles

@@ -119,6 +119,11 @@ router.put('/toggle-allowed', async (req, res) => {
 
         const data = await User.findOne({ _id })
 
+          // Si c'est Kévin, interdiction de changer
+        if (data.email == "kevin.dumarche@gmail.com"){
+            return res.json({result : false, error : "Cet admin ne peut être modifié."})
+        }
+
         data.is_allowed = !data.is_allowed
 
         await data.save()
@@ -150,6 +155,11 @@ router.put('/toggle-admin', async (req, res) => {
         if (!user || !user.is_admin) { return res.json({ result: false, error: 'Utilisateur non trouvé ou non autorisé. Essayez en vous reconnectant.' }) }
 
         const data = await User.findOne({ _id })
+
+        // Si c'est Kévin, interdiction de changer
+        if (data.email == "kevin.dumarche@gmail.com"){
+            return res.json({result : false, error : "Cet admin ne peut être modifié."})
+        }
 
         data.is_admin = !data.is_admin
 

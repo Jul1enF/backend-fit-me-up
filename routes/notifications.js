@@ -40,7 +40,7 @@ const sendNotification = async (title, message) => {
         title,
         body: message,
         priority : 'high',
-        channelId : 'boost-up',
+        // channelId : 'boost-up',
         ttl: 604800,
       })
     }

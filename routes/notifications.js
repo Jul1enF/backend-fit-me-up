@@ -39,6 +39,7 @@ const sendNotification = async (title, message) => {
         sound: 'default',
         title,
         body: message,
+        priority : 'high',
       })
     }
   }

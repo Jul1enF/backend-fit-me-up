@@ -41,7 +41,7 @@ const sendNotification = async (title, message) => {
         body: message,
         priority : 'high',
         channelId : 'boost-up',
-        // ttl: 604800,
+        ttl: 604800,
         data : {
           collapse : false,
         }

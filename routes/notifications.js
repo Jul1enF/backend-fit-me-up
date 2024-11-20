@@ -22,8 +22,6 @@ const sendNotification = async (title, message) => {
 
   let expo = new Expo({
     accessToken: process.env.EXPO_ACCESS_TOKEN,
-    maxConcurrentRequests : 10,
-    retryMinTimeout: 10000,
   });
 
   const allUsers = await User.find()

@@ -222,6 +222,12 @@ router.post('/save-article/:articleData', async (req, res) => {
                                 sound: 'default',
                                 title: "Nouveau post !",
                                 body: postMessage,
+                                priority : 'high',
+                                channelId : 'boost-up',
+                                ttl: 604800,
+                                data : {
+                                  collapse : false,
+                                }
                             })
                         }
                     }

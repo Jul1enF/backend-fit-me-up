@@ -290,10 +290,10 @@ etag@~1.8.1:
   resolved "https://registry.npmjs.org/etag/-/etag-1.8.1.tgz"
   integrity sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==
 
-expo-server-sdk@^3.12.0:
-  version "3.12.0"
-  resolved "https://registry.yarnpkg.com/expo-server-sdk/-/expo-server-sdk-3.12.0.tgz#267b856049c1ad5d1b4fa219615dd3f97ed0a565"
-  integrity sha512-A3S78NLdOfWn69kx+gMhO83wemcfQ5w7ntkXH+cFWwyLmaNGbfzpb1HqgTKLwd+BmFf6cf+FgltAaTHbl8G9QA==
+expo-server-sdk@^3.13.0:
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/expo-server-sdk/-/expo-server-sdk-3.13.0.tgz#c64e3949ec756d9ae69ccc108c65c3da511ed37a"
+  integrity sha512-EeGs8PlXmnP2uDpjVhnclQmlua3A0swEj3BzqoRiHfU4WPsN5v3eHhqjjwl+Lf2rleKW2L9lhWp6sCL1vPMnAg==
   dependencies:
     node-fetch "^2.6.0"
     promise-limit "^2.7.0"
